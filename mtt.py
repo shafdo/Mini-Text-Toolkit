@@ -9,20 +9,9 @@ currentDir = os.path.dirname(__file__)
 
 class Convertor():
 
-    def toAscii(self, convertMethod, convertValue):
-        if(convertMethod == "bin2ascii"):
-            try:
-                return binascii.unhexlify('%x' % int(str(convertValue), 2)).decode("ascii")
-            except(UnicodeDecodeError):
-                return "�"
-
-            except ValueError:
-                return ""
-
-    
-    def toBin(self, convertMethod, convertValue):
+    def fromAscii(self, convertMethod, convertValue):
         if(convertMethod == "ascii2bin"):
-            return ' '.join(format(ord(x), 'b') for x in convertValue)
+            return "0" +' 0'.join(format(ord(x), 'b') for x in convertValue)
        
         if(convertMethod == "ascii2hex"):
             return " ".join("{:02x}".format(ord(x)) for x in convertValue)
@@ -52,6 +41,21 @@ class Convertor():
 
         if(convertMethod == "ascii2htmlentities"):
             return html.escape(convertValue)
+        
+
+    
+    def fromBin(self, convertMethod, convertValue):
+        if(convertMethod == "bin2ascii"):
+            try:
+                return binascii.unhexlify('%x' % int(str(convertValue), 2)).decode("ascii")
+            except(UnicodeDecodeError):
+                return "�"
+
+            except ValueError:
+                return ""
+
+        if(convertMethod == "bin2hex"):
+            pass
 
 
 class SetupGUI():
@@ -63,7 +67,7 @@ class SetupGUI():
         # Event Loop
         while True:
             event, values = window.read()
-            print(event)
+            # print(event)
 
             # Screen Closed
             if event in ("None", sg.WIN_CLOSED, "e:69") or "_exit_" in event:
@@ -116,35 +120,38 @@ class SetupGUI():
                     val = values["_asciiTextBox_"].strip("\n")
 
                     # Ascii => Bin
-                    window.FindElement("_binTextBox_").Update(convertor.toBin("ascii2bin", val))
+                    window.FindElement("_binTextBox_").Update(convertor.fromAscii("ascii2bin", val))
 
                     # Ascii => Hex
-                    window.FindElement("_hexTextBox_").Update(convertor.toBin("ascii2hex", val))
+                    window.FindElement("_hexTextBox_").Update(convertor.fromAscii("ascii2hex", val))
 
                     # Ascii => Base64
-                    window.FindElement("_base64TextBox_").Update(convertor.toBin("ascii2base64", val))
+                    window.FindElement("_base64TextBox_").Update(convertor.fromAscii("ascii2base64", val))
 
                     # Ascii => Decimal
-                    window.FindElement("_decimalTextBox_").Update(convertor.toBin("ascii2dec", val))
+                    window.FindElement("_decimalTextBox_").Update(convertor.fromAscii("ascii2dec", val))
 
                     # Ascii => Rot13
-                    window.FindElement("_rot13TextBox_").Update(convertor.toBin("ascii2rot13", val))
+                    window.FindElement("_rot13TextBox_").Update(convertor.fromAscii("ascii2rot13", val))
                     
                     # Ascii => Rot47
-                    window.FindElement("_rot47TextBox_").Update(convertor.toBin("ascii2rot47", val))
+                    window.FindElement("_rot47TextBox_").Update(convertor.fromAscii("ascii2rot47", val))
 
                     # Ascii => UrlEncode
-                    window.FindElement("_urlEncodedTextBox_").Update(convertor.toBin("ascii2urlencode", val))
+                    window.FindElement("_urlEncodedTextBox_").Update(convertor.fromAscii("ascii2urlencode", val))
 
                     # Ascii => HtmlEntities
-                    window.FindElement("_htmlEntitiesTextBox_").Update(convertor.toBin("ascii2htmlentities", val))
+                    window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromAscii("ascii2htmlentities", val))
 
                 # Binary => X
                 elif(len(values["_binTextBox_"]) > 1): 
                     val = values["_binTextBox_"].strip("\n").replace(" ", "")
 
                     # Bin => Ascii
-                    window.FindElement("_asciiTextBox_").Update(convertor.toAscii("bin2ascii", val))  # Start Here
+                    window.FindElement("_asciiTextBox_").Update(convertor.fromBin("bin2ascii", val))
+
+                    # Bin => Hex
+                    window.FindElement("_hexTextBox_").Update(convertor.fromBin("bin2hex", val))  # Start Here
 
 
         window.close()
