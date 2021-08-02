@@ -2,7 +2,7 @@ from calendar import c
 from tkinter import font
 import PySimpleGUI as sg
 from urllib.parse import quote
-import os, base64, codecs, html
+import os, base64, codecs, html, binascii
 
 # Globals
 currentDir = os.path.dirname(__file__)
@@ -10,7 +10,14 @@ currentDir = os.path.dirname(__file__)
 class Convertor():
 
     def toAscii(self, convertMethod, convertValue):
-        pass
+        if(convertMethod == "bin2ascii"):
+            try:
+                return binascii.unhexlify('%x' % int(str(convertValue), 2)).decode("ascii")
+            except(UnicodeDecodeError):
+                return "�"
+
+            except ValueError:
+                return ""
 
     
     def toBin(self, convertMethod, convertValue):
@@ -56,10 +63,13 @@ class SetupGUI():
         # Event Loop
         while True:
             event, values = window.read()
+            # print(event)
 
             # Screen Closed
-            if (event == sg.WIN_CLOSED):
-                break
+            if (event == sg.WIN_CLOSED or "e:69" in event):
+                exitConfirmation = sg.popup_yes_no('Do you want to exit?')
+                if(exitConfirmation == "Yes"): break
+
 
             # Theme Change
             elif(event == "Light::_light_"):
@@ -67,10 +77,12 @@ class SetupGUI():
                 window = self.windowSetup("Default1")
                 pass
             
+
             elif(event == "Dark::_dark_"):
                 window.close()
                 window = self.windowSetup()
                 pass
+
 
             # Help Options
             elif(event == "About::_about_"):
@@ -85,7 +97,7 @@ class SetupGUI():
 
 
             # Go and Clear btn events          
-            elif(event == "_clear_"):
+            elif(event == "_clear_" or "r:82" in event):
                 window.FindElement('_asciiTextBox_').Update('')
                 window.FindElement('_binTextBox_').Update('')
                 window.FindElement('_hexTextBox_').Update('')
@@ -128,12 +140,12 @@ class SetupGUI():
                     # Ascii => HtmlEntities
                     window.FindElement("_htmlEntitiesTextBox_").Update(convertor.toBin("ascii2htmlentities", val))
 
-
+                # Binary => X
                 elif(len(values["_binTextBox_"]) > 1): 
-                    val = values["_binTextBox_"].strip("\n")
+                    val = values["_binTextBox_"].strip("\n").replace(" ", "")
 
                     # Bin => Ascii
-                    window.FindElement("_binTextBox_").Update(convertor.toAscii("bin2ascii", val))  # Start Here
+                    window.FindElement("_asciiTextBox_").Update(convertor.toAscii("bin2ascii", val))  # Start Here
 
 
         window.close()
@@ -166,16 +178,17 @@ class SetupGUI():
             "darkColor4": "#00c0c7",
             "darkColor5": "#15c21e",
             #########################
-
         }
 
         # Setup menu
         menu_stc = [
             [
-                "Preferences", 
+                "Options", 
                 [
+                    "Reset Feilds [Ctrl+R]",
                     "Theme", 
                     ["Light::_light_", "Dark::_dark_"],
+                    "Exit [Ctrl+E]",
                 ],
             ],
             [
@@ -201,7 +214,7 @@ class SetupGUI():
                 [sg.Text('Rot47', size=(40, 1), justification="center", font=fontHeading), sg.Text('URL Encoded', size=(40, 1), justification="center", font=fontHeading), sg.Text('HTML Entities', size=(40, 1), justification="center", font=fontHeading)],    
                 [sg.Multiline(size=(35, 7), key='_rot47TextBox_', font=fontTextBox, text_color=fontColors["lightColor5"]), sg.Multiline(size=(35, 7), key='_urlEncodedTextBox_', font=fontTextBox, text_color=fontColors["lightColor3"]), sg.Multiline(size=(35, 7), key='_htmlEntitiesTextBox_', font=fontTextBox, text_color=fontColors["lightColor1"])],
                 
-                [sg.Button('GO', size=(25, 1), key='_go_'), sg.Button('RESET', size=(25, 1), key="_clear_")] 
+                [sg.Button('GO', size=(25, 1), key='_go_'), sg.Button('Reset Feilds [Ctrl+R]', size=(25, 1), key="_clear_")] 
             ]
         
         else:
@@ -219,10 +232,10 @@ class SetupGUI():
                 
                 [sg.Text("spacer", visible=False)],
 
-                [sg.Button('GO', size=(25, 2)), sg.Button('CLEAR FEILDS', size=(25, 2))] 
+                [sg.Button('GO', size=(25, 1), key='_go_'), sg.Button('Reset Feilds [Ctrl+R]', size=(25, 1), key="_clear_")] 
             ]
 
-        return sg.Window("Mini Text Toolkit (MTT)", layout, finalize=True)
+        return sg.Window("Mini Text Toolkit (MTT)", layout, finalize=True, return_keyboard_events=True)
 
 
 setupgui = SetupGUI()
