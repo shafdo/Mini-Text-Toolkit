@@ -2,7 +2,7 @@ from calendar import c
 from tkinter import font
 import PySimpleGUI as sg
 from urllib.parse import quote
-import os, base64, codecs, html, binascii
+import os, base64, codecs, html, binascii, time
 
 # Globals
 currentDir = os.path.dirname(__file__)
@@ -63,12 +63,11 @@ class SetupGUI():
         # Event Loop
         while True:
             event, values = window.read()
-            # print(event)
+            print(event)
 
             # Screen Closed
-            if (event == sg.WIN_CLOSED or "e:69" in event):
-                exitConfirmation = sg.popup_yes_no('Do you want to exit?')
-                if(exitConfirmation == "Yes"): break
+            if event in ("None", sg.WIN_CLOSED, "e:69") or "_exit_" in event:
+                break
 
 
             # Theme Change
@@ -97,7 +96,7 @@ class SetupGUI():
 
 
             # Go and Clear btn events          
-            elif(event == "_clear_" or "r:82" in event):
+            elif("_clear_" in event or "r:82" in event):
                 window.FindElement('_asciiTextBox_').Update('')
                 window.FindElement('_binTextBox_').Update('')
                 window.FindElement('_hexTextBox_').Update('')
@@ -185,10 +184,10 @@ class SetupGUI():
             [
                 "Options", 
                 [
-                    "Reset Feilds [Ctrl+R]",
+                    "Reset Feilds [Ctrl+R]::_clear_",
                     "Theme", 
                     ["Light::_light_", "Dark::_dark_"],
-                    "Exit [Ctrl+E]",
+                    "Exit [Ctrl+E]::_exit_",
                 ],
             ],
             [
