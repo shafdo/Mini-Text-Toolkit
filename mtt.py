@@ -63,6 +63,37 @@ class Convertor():
             getAscii = self.fromBin("bin2ascii", convertValue)
             return base64.b64encode(getAscii.encode()).decode("utf-8")
 
+        if(convertMethod == "bin2decimal"):
+            decimalNumContainer = []
+            if(len(convertValue) % 8 == 0):
+                # 8 bit padding ok
+                valuesSplitBy8 = [convertValue[i:i+8] for i in range(0, len(convertValue), 8)]
+                for val in valuesSplitBy8: decimalNumContainer.append(int(val, 2))
+                temp = [str(val) for val in decimalNumContainer]
+                return " ".join(temp)
+
+            else:
+                # 8 bit Padding incorrect {MUST FIX PADDING}
+                allBinaryChars = [i for i in convertValue]
+                bit8SplitContainer = []
+
+                while 1:
+                    if(len(allBinaryChars) == 0): break
+                    
+                    elif(len(allBinaryChars) >= 8):
+                        bit8SplitContainer.append("".join(allBinaryChars[:8]))
+                        del allBinaryChars[:8]
+
+                    else: allBinaryChars.insert(0, "0")
+
+                return self.fromBin("bin2decimal", "".join(bit8SplitContainer))
+
+                
+
+
+
+
+
 
 
 class SetupGUI():
@@ -162,6 +193,9 @@ class SetupGUI():
 
                     # Bin => Base64
                     window.FindElement("_base64TextBox_").Update(convertor.fromBin("bin2base64", val))
+
+                    # Bin => Decimal
+                    window.FindElement("_decimalTextBox_").Update(convertor.fromBin("bin2decimal", val))  # Start Here
 
 
         window.close()
