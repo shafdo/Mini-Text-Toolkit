@@ -56,7 +56,12 @@ class Convertor():
 
         if(convertMethod == "bin2hex"):
             hexValWithout0x = hex(int(convertValue, 2))[2:]
-            return " ".join([hexValWithout0x[i:i+2] for i in range(0, len(hexValWithout0x), 2)])
+            hexValSpaceInBetween = " ".join([hexValWithout0x[i:i+2] for i in range(0, len(hexValWithout0x), 2)])
+            return hexValSpaceInBetween
+
+        if(convertMethod == "bin2base64"):
+            getAscii = self.fromBin("bin2ascii", convertValue)
+            return base64.b64encode(getAscii.encode()).decode("utf-8")
 
 
 
@@ -154,6 +159,9 @@ class SetupGUI():
 
                     # Bin => Hex
                     window.FindElement("_hexTextBox_").Update(convertor.fromBin("bin2hex", val))
+
+                    # Bin => Base64
+                    window.FindElement("_base64TextBox_").Update(convertor.fromBin("bin2base64", val))
 
 
         window.close()
