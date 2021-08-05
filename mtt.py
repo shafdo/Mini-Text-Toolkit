@@ -55,7 +55,9 @@ class Convertor():
                 return ""
 
         if(convertMethod == "bin2hex"):
-            pass
+            hexValWithout0x = hex(int(convertValue, 2))[2:]
+            return " ".join([hexValWithout0x[i:i+2] for i in range(0, len(hexValWithout0x), 2)])
+
 
 
 class SetupGUI():
@@ -151,7 +153,7 @@ class SetupGUI():
                     window.FindElement("_asciiTextBox_").Update(convertor.fromBin("bin2ascii", val))
 
                     # Bin => Hex
-                    window.FindElement("_hexTextBox_").Update(convertor.fromBin("bin2hex", val))  # Start Here
+                    window.FindElement("_hexTextBox_").Update(convertor.fromBin("bin2hex", val))
 
 
         window.close()
