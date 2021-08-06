@@ -14,6 +14,22 @@ errorImgData = b'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAA
 
 class Convertor():
 
+    def paddingFixer(self, convertValue, skipper):
+        allXChars = [i for i in convertValue]
+        bitsSplitContainer = []
+
+        while 1:
+            if(len(allXChars) == 0): break
+
+            elif(len(allXChars) >= skipper):
+                bitsSplitContainer.append("".join(allXChars[:skipper]))
+                del allXChars[:skipper]
+
+            else: allXChars.insert(0, "0")
+
+        return "".join(bitsSplitContainer)
+
+
     def fromAscii(self, convertMethod, convertValue):
         if(convertMethod == "ascii2bin"):
             allChars = [i for i in convertValue]
@@ -76,19 +92,8 @@ class Convertor():
                 return hexValSpaceInBetween
             
             else:
-                allBinaryChars = [i for i in convertValue]
-                bit8SplitContainer = []
-                
-                while 1:
-                    if(len(allBinaryChars) == 0): break
-
-                    elif(len(allBinaryChars) >= 8):
-                        bit8SplitContainer.append("".join(allBinaryChars[:8]))
-                        del allBinaryChars[:8]
-
-                    else: allBinaryChars.insert(0, "0")
-
-                return self.fromBin("bin2hex", "".join(bit8SplitContainer))
+                # Fix Padding
+                return self.fromBin("bin2hex", self.paddingFixer(convertValue, 8))
 
         if(convertMethod == "bin2base64"):
             getAscii = self.fromBin("bin2ascii", convertValue)
@@ -97,27 +102,14 @@ class Convertor():
         if(convertMethod == "bin2decimal"):
             decimalNumContainer = []
             if(len(convertValue) % 8 == 0):
-                # 8 bit padding ok
                 valuesSplitBy8 = [convertValue[i:i+8] for i in range(0, len(convertValue), 8)]
                 for val in valuesSplitBy8: decimalNumContainer.append(int(val, 2))
                 temp = [str(val) for val in decimalNumContainer]
                 return " ".join(temp)
 
             else:
-                # 8 bit Padding incorrect {MUST FIX PADDING}
-                allBinaryChars = [i for i in convertValue]
-                bit8SplitContainer = []
-
-                while 1:
-                    if(len(allBinaryChars) == 0): break
-                    
-                    elif(len(allBinaryChars) >= 8):
-                        bit8SplitContainer.append("".join(allBinaryChars[:8]))
-                        del allBinaryChars[:8]
-
-                    else: allBinaryChars.insert(0, "0")
-
-                return self.fromBin("bin2decimal", "".join(bit8SplitContainer))
+                # Fix Padding
+                return self.fromBin("bin2decimal", "".join(self.paddingFixer(convertValue, 8)))
 
         if(convertMethod == "bin2rot13"):
             asciiVal = self.fromBin("bin2ascii", convertValue)
@@ -142,8 +134,8 @@ class Convertor():
                 
     def fromHex(self, convertMethod, convertValue):
         if(convertMethod == "hex2ascii"):
-            bytes_object = bytes.fromhex(convertValue.replace("0x", ""))
             try:
+                bytes_object = bytes.fromhex(convertValue.replace("0x", ""))
                 asciiString = bytes_object.decode("ASCII")
                 return asciiString
             except:
@@ -156,6 +148,19 @@ class Convertor():
         if(convertMethod == "hex2base64"):
             asciiString = self.fromHex("hex2ascii", convertValue)
             return base64.b64encode(asciiString.encode()).decode("ASCII")
+
+        if(convertMethod == "hex2decimal"):
+            if(len(convertValue) % 2 == 0):
+                hexPairContainer = []
+                for hexPair in [convertValue[i:i+2] for i in range(0, len(convertValue), 2)]: hexPairContainer.append(str(int(hexPair, 16)))
+            
+                return " ".join(hexPairContainer)
+
+            else:
+                # Fix Padding
+                return self.fromHex("hex2decimal", self.paddingFixer(convertValue, 2))
+
+
 
 
 
@@ -311,7 +316,10 @@ class SetupGUI():
                         window.FindElement("_base64TextBox_").Update(convertor.fromHex("hex2base64", val))
                         
                         # Hex => Decimal
-                        window.FindElement("_decimalTextBox_").Update(convertor.fromHex("hex2decimal", val))      # Start Here
+                        window.FindElement("_decimalTextBox_").Update(convertor.fromHex("hex2decimal", val))
+
+                        # Hex => Decimal
+                        window.FindElement("_rot13TextBox_").Update(convertor.fromHex("hex2rot13", val))      # Start Here
 
                     except(ValueError):
                         convertor.valueErrorMsg("hex")
