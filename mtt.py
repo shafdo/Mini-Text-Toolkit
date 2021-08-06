@@ -92,6 +92,17 @@ class Convertor():
 
                 return self.fromBin("bin2decimal", "".join(bit8SplitContainer))
 
+
+        if(convertMethod == "bin2rot13"):
+            asciiVal = self.fromBin("bin2ascii", convertValue)
+            rot13Val = self.fromAscii("ascii2rot13", asciiVal)
+            return rot13Val
+
+        if(convertMethod == "bin2rot47"):
+            asciiVal = self.fromBin("bin2ascii", convertValue)
+            rot47Val = self.fromAscii("ascii2rot47", asciiVal)
+            return rot47Val
+
                 
 
 
@@ -199,7 +210,13 @@ class SetupGUI():
                     window.FindElement("_decimalTextBox_").Update(convertor.fromBin("bin2decimal", val))
 
                     # Bin => Rot13
-                    window.FindElement("_rot13TextBox_").Update(convertor.fromBin("bin2rot13", val))    # Start Here
+                    window.FindElement("_rot13TextBox_").Update(convertor.fromBin("bin2rot13", val))
+
+                    # Bin => Rot47
+                    window.FindElement("_rot47TextBox_").Update(convertor.fromBin("bin2rot47", val))
+
+                    # Bin => URLEncoded
+                    window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBin("bin2urlencode", val))   # Start Here
 
                 else:
                     layout = [
