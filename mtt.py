@@ -144,14 +144,18 @@ class Convertor():
         if(convertMethod == "hex2ascii"):
             bytes_object = bytes.fromhex(convertValue.replace("0x", ""))
             try:
-                ascii_string = bytes_object.decode("ASCII")
-                return ascii_string
+                asciiString = bytes_object.decode("ASCII")
+                return asciiString
             except:
                 return ""
 
         if(convertMethod == "hex2bin"):
             binaryString = bin(int(convertValue, 16))[2:].zfill(8)
             return " ".join([binaryString[i:i+8] for i in range(0, len(binaryString), 8)])
+
+        if(convertMethod == "hex2base64"):
+            asciiString = self.fromHex("hex2ascii", convertValue)
+            return base64.b64encode(asciiString.encode()).decode("ASCII")
 
 
 
@@ -304,7 +308,10 @@ class SetupGUI():
                         window.FindElement("_binTextBox_").Update(convertor.fromHex("hex2bin", val))
 
                         # Hex => base64
-                        window.FindElement("_base64TextBox_").Update(convertor.fromHex("hex2base64", val))      # Start Here
+                        window.FindElement("_base64TextBox_").Update(convertor.fromHex("hex2base64", val))
+                        
+                        # Hex => Decimal
+                        window.FindElement("_decimalTextBox_").Update(convertor.fromHex("hex2decimal", val))      # Start Here
 
                     except(ValueError):
                         convertor.valueErrorMsg("hex")
