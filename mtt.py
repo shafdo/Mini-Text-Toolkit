@@ -104,7 +104,6 @@ class Convertor():
 
                 return self.fromBin("bin2decimal", "".join(bit8SplitContainer))
 
-
         if(convertMethod == "bin2rot13"):
             asciiVal = self.fromBin("bin2ascii", convertValue)
             rot13Val = self.fromAscii("ascii2rot13", asciiVal)
@@ -119,9 +118,16 @@ class Convertor():
             asciiVal = self.fromBin("bin2ascii", convertValue)
             urlEncoded = self.fromAscii("ascii2urlencode", asciiVal)
             return urlEncoded
+        
+        if(convertMethod == "bin2htmlentities"):
+            asciiVal = self.fromBin("bin2ascii", convertValue)
+            htmlEncoded = self.fromAscii("ascii2htmlentities", asciiVal)
+            return htmlEncoded
 
                 
-
+    def fromHex(self, convertMethod, convertValue):
+        if(convertMethod == "hex2ascii"):
+            pass
 
 
 
@@ -134,7 +140,7 @@ class SetupGUI():
         # Event Loop
         while True:
             event, values = window.read()
-            # print(event)
+            # print(event)  # Debug Application events & Keystroke events
 
             # Screen Closed
             if event in ("None", sg.WIN_CLOSED, "e:69") or "_exit_" in event:
@@ -237,6 +243,14 @@ class SetupGUI():
 
                     # Bin => HTMLEntities
                     window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("bin2htmlentities", val))   # Start Here
+
+                # Hex => X
+                elif(len(values["_hexTextBox_"]) > 1): 
+                    val = values["_binTextBox_"].strip("\n").replace(" ", "")
+
+                    # Hex => Ascii
+                    window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))    # Start Here
+
 
                 else:
                     layout = [
