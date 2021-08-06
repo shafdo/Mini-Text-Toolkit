@@ -245,7 +245,6 @@ class SetupGUI():
                 # Binary => X
                 elif(len(values["_binTextBox_"]) > 1): 
                     val = values["_binTextBox_"].strip("\n").replace(" ", "")
-
                     try:
                         # Bin => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromBin("bin2ascii", val))
@@ -277,10 +276,12 @@ class SetupGUI():
                 # Hex => X
                 elif(len(values["_hexTextBox_"]) > 1): 
                     val = values["_hexTextBox_"].strip("\n").replace(" ", "")
-
                     try:
                         # Hex => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))    # Start Here
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))
+                        
+                        # Hex => Bin
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2bin", val))      # Start Here
 
                     except(ValueError):
                         convertor.valueErrorMsg("hex")
