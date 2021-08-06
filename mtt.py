@@ -1,8 +1,7 @@
 from calendar import c
-from tkinter import font
 import PySimpleGUI as sg
 from urllib.parse import quote
-import os, base64, codecs, html, binascii, time
+import os, base64, codecs, html, binascii, csv
 
 # Globals
 currentDir = os.path.dirname(__file__)
@@ -13,6 +12,14 @@ aboutImgData = b'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAA
 errorImgData = b'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'
 
 class Convertor():
+
+    def historyLogger(self, ):
+        ''' History Output Structure
+        /\/\/\/\/\/\/ DATE /\/\/\/\/\/\/
+        ConvertFromType     Value
+        Ex: Binary          1001110
+        '''
+        pass
 
     def paddingFixer(self, convertValue, skipper):
         allXChars = [i for i in convertValue]
@@ -180,6 +187,17 @@ class Convertor():
             htmlEncoded = self.fromAscii("ascii2htmlentities", asciiVal)
             return htmlEncoded
 
+
+    def fromBase64(self, convertMethod, convertValue):
+        if(convertMethod == "base642ascii"):
+            try:
+                return base64.b64decode(convertValue).decode("ASCII")
+            
+            except(UnicodeDecodeError):
+                return "�"
+
+            except ValueError:
+                return ""
 
 
     def valueErrorMsg(self, convertMethod):
@@ -356,7 +374,10 @@ class SetupGUI():
                     val = values["_base64TextBox_"].strip("\n").replace(" ", "")
                     try:
                         # Base64 => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromBase64("base642ascii", val))  # Start Here
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromBase64("base642ascii", val))
+                       
+                        # Base64 => Bin
+                        window.FindElement("_binTextBox_").Update(convertor.fromBase64("base642bin", val))  # Start Here
 
                     except(ValueError):
                         convertor.valueErrorMsg("Base64")
@@ -408,6 +429,7 @@ class SetupGUI():
                 "Options", 
                 [
                     "Reset Feilds [Ctrl+R]::_clear_",
+                    "View History [Ctrl+H]::_history_",
                     "Theme", 
                     ["Light::_light_", "Dark::_dark_"],
                     "Exit [Ctrl+E]::_exit_",
