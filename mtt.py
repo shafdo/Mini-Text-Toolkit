@@ -15,7 +15,18 @@ class Convertor():
 
     def fromAscii(self, convertMethod, convertValue):
         if(convertMethod == "ascii2bin"):
-            return "0" +' 0'.join(format(ord(x), 'b') for x in convertValue)
+            allChars = [i for i in convertValue]
+            binariesContainer = []
+            for char in allChars:
+                binaryVal = bin(ord(char)).replace("0b", "0")
+                if(len(binaryVal) == 8): binariesContainer.append(binaryVal)
+                else:
+                    binariesContainer.append("0" * (8 - len(binaryVal)) + binaryVal)
+
+            return " ".join(binariesContainer)
+
+            # Old Method (Works but prone to some error).
+            # return "0" +' 0'.join(format(ord(x), 'b') for x in convertValue)
        
         if(convertMethod == "ascii2hex"):
             return " ".join("{:02x}".format(ord(x)) for x in convertValue)
@@ -56,6 +67,7 @@ class Convertor():
                 return "�"
 
             except ValueError:
+                print(ValueError)
                 return ""
 
         if(convertMethod == "bin2hex"):
@@ -102,6 +114,11 @@ class Convertor():
             asciiVal = self.fromBin("bin2ascii", convertValue)
             rot47Val = self.fromAscii("ascii2rot47", asciiVal)
             return rot47Val
+
+        if(convertMethod == "bin2urlencode"):
+            asciiVal = self.fromBin("bin2ascii", convertValue)
+            urlEncoded = self.fromAscii("ascii2urlencode", asciiVal)
+            return urlEncoded
 
                 
 
@@ -216,7 +233,10 @@ class SetupGUI():
                     window.FindElement("_rot47TextBox_").Update(convertor.fromBin("bin2rot47", val))
 
                     # Bin => URLEncoded
-                    window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBin("bin2urlencode", val))   # Start Here
+                    window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBin("bin2urlencode", val))
+
+                    # Bin => HTMLEntities
+                    window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("ascii2htmlentities", val))   # Start Here
 
                 else:
                     layout = [
