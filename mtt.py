@@ -67,13 +67,28 @@ class Convertor():
                 return "�"
 
             except ValueError:
-                print(ValueError)
                 return ""
 
         if(convertMethod == "bin2hex"):
-            hexValWithout0x = hex(int(convertValue, 2))[2:]
-            hexValSpaceInBetween = " ".join([hexValWithout0x[i:i+2] for i in range(0, len(hexValWithout0x), 2)])
-            return hexValSpaceInBetween
+            if(len(convertValue) % 8 == 0):
+                hexValWithout0x = hex(int(convertValue, 2))[2:]
+                hexValSpaceInBetween = " ".join([hexValWithout0x[i:i+2] for i in range(0, len(hexValWithout0x), 2)])
+                return hexValSpaceInBetween
+            
+            else:
+                allBinaryChars = [i for i in convertValue]
+                bit8SplitContainer = []
+                
+                while 1:
+                    if(len(allBinaryChars) == 0): break
+
+                    elif(len(allBinaryChars) >= 8):
+                        bit8SplitContainer.append("".join(allBinaryChars[:8]))
+                        del allBinaryChars[:8]
+
+                    else: allBinaryChars.insert(0, "0")
+
+                return self.fromBin("bin2hex", "".join(bit8SplitContainer))
 
         if(convertMethod == "bin2base64"):
             getAscii = self.fromBin("bin2ascii", convertValue)
