@@ -134,6 +134,11 @@ class Convertor():
             except:
                 return ""
 
+        if(convertMethod == "hex2bin"):
+            binaryString = bin(int(convertValue, 16))[2:].zfill(8)
+            return " ".join([binaryString[i:i+8] for i in range(0, len(binaryString), 8)])
+
+
 
     def valueErrorMsg(self, convertMethod):
         layout = [
@@ -281,7 +286,10 @@ class SetupGUI():
                         window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))
                         
                         # Hex => Bin
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2bin", val))      # Start Here
+                        window.FindElement("_binTextBox_").Update(convertor.fromHex("hex2bin", val))
+
+                        # Hex => base64
+                        window.FindElement("_base64TextBox_").Update(convertor.fromHex("hex2base64", val))      # Start Here
 
                     except(ValueError):
                         convertor.valueErrorMsg("hex")
