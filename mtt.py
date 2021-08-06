@@ -160,7 +160,25 @@ class Convertor():
                 # Fix Padding
                 return self.fromHex("hex2decimal", self.paddingFixer(convertValue, 2))
 
+        if(convertMethod == "hex2rot13"):
+            asciiVal = self.fromHex("hex2ascii", convertValue)
+            rot13Val = self.fromAscii("ascii2rot13", asciiVal)
+            return rot13Val
 
+        if(convertMethod == "hex2rot47"):
+            asciiVal = self.fromHex("hex2ascii", convertValue)
+            rot47Val = self.fromAscii("ascii2rot47", asciiVal)
+            return rot47Val
+        
+        if(convertMethod == "hex2urlencode"):
+            asciiVal = self.fromHex("hex2ascii", convertValue)
+            urlEncoded = self.fromAscii("ascii2urlencode", asciiVal)
+            return urlEncoded
+        
+        if(convertMethod == "hex2htmlentities"):
+            asciiVal = self.fromHex("hex2ascii", convertValue)
+            htmlEncoded = self.fromAscii("ascii2htmlentities", asciiVal)
+            return htmlEncoded
 
 
 
@@ -304,7 +322,7 @@ class SetupGUI():
 
                 # Hex => X
                 elif(len(values["_hexTextBox_"]) > 1): 
-                    val = values["_hexTextBox_"].strip("\n").replace(" ", "")
+                    val = values["_hexTextBox_"].strip("\n").replace(" ", "").replace("0x", "")
                     try:
                         # Hex => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))
@@ -318,11 +336,30 @@ class SetupGUI():
                         # Hex => Decimal
                         window.FindElement("_decimalTextBox_").Update(convertor.fromHex("hex2decimal", val))
 
-                        # Hex => Decimal
-                        window.FindElement("_rot13TextBox_").Update(convertor.fromHex("hex2rot13", val))      # Start Here
+                        # Hex => Rot13
+                        window.FindElement("_rot13TextBox_").Update(convertor.fromHex("hex2rot13", val))
+
+                        # Hex => Rot47
+                        window.FindElement("_rot47TextBox_").Update(convertor.fromHex("hex2rot47", val))
+                        
+                        # Hex => URLEncoded
+                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromHex("hex2urlencode", val))
+                        
+                        # Hex => HTMLEntities
+                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromHex("hex2htmlentities", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("hex")
+
+                # Base64 => X
+                elif(len(values["_base64TextBox_"]) > 1): 
+                    val = values["_base64TextBox_"].strip("\n").replace(" ", "")
+                    try:
+                        # Base64 => Ascii
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromBase64("base642ascii", val))  # Start Here
+
+                    except(ValueError):
+                        convertor.valueErrorMsg("Base64")
 
                 else:
                     layout = [
