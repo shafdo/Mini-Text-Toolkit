@@ -236,7 +236,7 @@ class SetupGUI():
                     window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBin("bin2urlencode", val))
 
                     # Bin => HTMLEntities
-                    window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("ascii2htmlentities", val))   # Start Here
+                    window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("bin2htmlentities", val))   # Start Here
 
                 else:
                     layout = [
