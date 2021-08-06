@@ -6,6 +6,7 @@ import os, base64, codecs, html, binascii, time
 
 # Globals
 currentDir = os.path.dirname(__file__)
+sgThemeGlobal = ""
 
 # Icons
 aboutImgData = b'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFP0lEQVR4nO2Y7U9TVxzHGXvp9hcse7f1uaVPSQtuMxmSZWuoXUYMwqI4tbzwxabR1czE4KagYWlLl2I7kLbJeNgLN6ZbdFBELSAlS5SRLBKzFyzbMhITH0qviobffqeu19729nIv9CHc3W/yDYHb8zu/7+dezj09FRWSJEmSJEmSJEmSiiOz2bzFZDL1G43GOfTvPD1HxhgMhrfK3f+6hEFOYxBYj0mNcudYk7D5vesNn+E95c4jVC9g0wssd/MH/HkE7crjI/iZYRYAC6RmuUPxFv7vvsYSPsJ3PH4+nD2e1CxmzwUVNmxhuYsNAsY3sACoLmbPBRXebWt2AHwb2PmOx7D1LONritlzQSUKAAAVlY8m7bbkhL19KeZwC/Gt720DoRO1kOkb39qG+Y6/MfTucPb4376zDQntI9X7VbtNcPjERP2HVLw58fCXfSAGU9PNicSUvZlXeGpqWxM189FKuZsuOATMlLj23o7VAVxvus8YPNOC3rVB3ZL9JNzjDP94qn77s9C7gbr2DiRHTbA0atjQTkbNqSwkUwpCrH47x+P/wRihlrxcXfbGCw4CM5Fs1FRDND8AXPiSV98ue7NFg3ClNrUgsoZ/MG1XUTM7y95ksU0yJsZtmhwAySlHX3JyW9kbLPpTgBmpSUdvDoCH041/Jq9sKXuDRQeAGSnMyggPP9dtouK7VpZGjbwL3R8xw4+Rw9B/9jRMDu4ueZDY4B74pvcUXIgcggdC3lZRE1DxlhWYsL9MAzi23+I62lp958BO7Xw+H26pmh84rr6TdtDtWg6Hw5ByKAR97fZE+lrvUc0iV621uPczzWK6fl+7I0HPjf7a/elyZm+HWrS3uWqRrMf2V7toAHK5/JRMJgMuW0wyuPjl67R7zrghs4mw72P62qhHzllrLR7Bmun64a5PGHP3BNyM3qym1efHzB00AK1Wu1U4AA+jiZDvQOkA+A4y5u4NeAUDwMy1mcvAi2q1+qlOp4N83mzVwe0hDe2g73Po7u6mPfiVk742EdDkrbNWx848n3vQ38qYm/SS2dtmC3ctlUr1lGRmLIRI5G+ug8k3apgLpL/DCW1tbbTP+x30tZk+Q6EOQ2nHzz6f+7z/fcbc/o5WRm9v1nDXwqx/5bwG8Y+z6wFwobuUABzrBXAzB4BGo4kKARDqbGI0Md6ztWQALvfUMeYOde4QCmCEDcCQEACxgB48Xzih/bgLgu2NMD+gKRmAW/1qCJxshJM4t/eEE9cHvSAAmHUgBwAugl1CANwMqxgr7x/ndCUDsHBOy5h7NqLiDcBoNAJmdecAwJXRSS7yBXD3oh6mg0oY88rg14iaca3YAIhn8QaQueNBBdy9xP8JMBgMBMDeHABVVVV6NG8AXC4FAC5zAdDr9cRVOQBQlfiOXBY7AMz4mGRlA8C5FxALANY9QAaAvHsBEQHI3QOkxbUXEBGA3D1ABoBBsQMgGbkAeMUMgLzmMaMnLwDcC+zLtxcQCwDWPUBaXHsBMQAg2fLtAdKqxEWCdS8gBgCce4CMdWBRrADw5v7DGf6/dYB1MyQGACQbHwBzaNEBIJmUSuUcHwBecmiIH059cUi/FTYiANI7yUCykEysX4NZALykUCgeZRwfA/4OVrMCxn1yXh7rUqTGFNLRLiXv+avNytQY0ns6B8mEi+CmVQEQ4UJYh4OecB2Lc7nYx+KrOftYHEE8IUf/vMKnhY/Lq/g0jCC5e1hg2WKQL0c9MuDjnzoVK2RMIU1q8p3fan42hvSOGS7h+/8VQeElSZIkSZIkSZL+D/oXjKMfxw94DhgAAAAASUVORK5CYII='
@@ -58,7 +59,6 @@ class Convertor():
             return html.escape(convertValue)
         
 
-    
     def fromBin(self, convertMethod, convertValue):
         if(convertMethod == "bin2ascii"):
             try:
@@ -127,8 +127,21 @@ class Convertor():
                 
     def fromHex(self, convertMethod, convertValue):
         if(convertMethod == "hex2ascii"):
-            pass
+            bytes_object = bytes.fromhex(convertValue.replace("0x", ""))
+            try:
+                ascii_string = bytes_object.decode("ASCII")
+                return ascii_string
+            except:
+                return ""
 
+
+    def valueErrorMsg(self, convertMethod):
+        layout = [
+            [sg.Image(data=errorImgData, size=(350,75))],
+            [sg.Text("* ERROR *", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#ff4265")],
+            [sg.Text("Invalid {} value detected.".format(convertMethod), size=(290, 1), justification="center", font=("Arial", 12))],
+        ]
+        sg.Window("Error", layout, size=(350, 175), finalize=True)
 
 
 class SetupGUI():
@@ -136,6 +149,7 @@ class SetupGUI():
         
         # Setup Windows
         window = self.windowSetup()
+        sgThemeGlobal = "Dark"
 
         # Event Loop
         while True:
@@ -151,25 +165,37 @@ class SetupGUI():
             elif(event == "Light::_light_"):
                 window.close()
                 window = self.windowSetup("Default1")
+                sgThemeGlobal = "Default1"
                 pass
             
 
             elif(event == "Dark::_dark_"):
                 window.close()
                 window = self.windowSetup()
+                sgThemeGlobal = "Dark"
                 pass
 
 
             # Help Options
             elif(event == "About::_about_"):
-                layout = [
-                    [sg.Image(data=aboutImgData, size=(350,75))],
-                    [sg.Text("Mini Text Toolkit (MTT)", size=(290, 1), justification="center")],
-                    [sg.Text("Version 1.0", size=(290, 1), justification="center")],
-                    [],
-                    [sg.Text("Created By: ShaFdo", size=(290, 1), justification="center")],
-                ]
-                sg.Window("About", layout, size=(350, 200), finalize=True)
+                if(sgThemeGlobal == "Dark"):
+                    layout = [
+                        [sg.Image(data=aboutImgData, size=(350,75))],
+                        [sg.Text("Mini Text Toolkit (MTT)", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#ebd234")],
+                        [sg.Text("Version 1.0", size=(290, 1), justification="center", font=("Arial", 12))],
+                        [],
+                        [sg.Text("Created By: ShaFdo", size=(290, 1), justification="center", font=("Arial", 12))],
+                    ]
+                    sg.Window("About", layout, size=(350, 200), finalize=True)
+                else:
+                    layout = [
+                        [sg.Image(data=aboutImgData, size=(350,75))],
+                        [sg.Text("Mini Text Toolkit (MTT)", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#d4bf00")],
+                        [sg.Text("Version 1.0", size=(290, 1), justification="center", font=("Arial", 12))],
+                        [],
+                        [sg.Text("Created By: ShaFdo", size=(290, 1), justification="center", font=("Arial", 12))],
+                    ]
+                    sg.Window("About", layout, size=(350, 200), finalize=True)
 
 
             # Go and Clear btn events          
@@ -220,43 +246,50 @@ class SetupGUI():
                 elif(len(values["_binTextBox_"]) > 1): 
                     val = values["_binTextBox_"].strip("\n").replace(" ", "")
 
-                    # Bin => Ascii
-                    window.FindElement("_asciiTextBox_").Update(convertor.fromBin("bin2ascii", val))
+                    try:
+                        # Bin => Ascii
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromBin("bin2ascii", val))
 
-                    # Bin => Hex
-                    window.FindElement("_hexTextBox_").Update(convertor.fromBin("bin2hex", val))
+                        # Bin => Hex
+                        window.FindElement("_hexTextBox_").Update(convertor.fromBin("bin2hex", val))
 
-                    # Bin => Base64
-                    window.FindElement("_base64TextBox_").Update(convertor.fromBin("bin2base64", val))
+                        # Bin => Base64
+                        window.FindElement("_base64TextBox_").Update(convertor.fromBin("bin2base64", val))
 
-                    # Bin => Decimal
-                    window.FindElement("_decimalTextBox_").Update(convertor.fromBin("bin2decimal", val))
+                        # Bin => Decimal
+                        window.FindElement("_decimalTextBox_").Update(convertor.fromBin("bin2decimal", val))
 
-                    # Bin => Rot13
-                    window.FindElement("_rot13TextBox_").Update(convertor.fromBin("bin2rot13", val))
+                        # Bin => Rot13
+                        window.FindElement("_rot13TextBox_").Update(convertor.fromBin("bin2rot13", val))
 
-                    # Bin => Rot47
-                    window.FindElement("_rot47TextBox_").Update(convertor.fromBin("bin2rot47", val))
+                        # Bin => Rot47
+                        window.FindElement("_rot47TextBox_").Update(convertor.fromBin("bin2rot47", val))
 
-                    # Bin => URLEncoded
-                    window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBin("bin2urlencode", val))
+                        # Bin => URLEncoded
+                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBin("bin2urlencode", val))
 
-                    # Bin => HTMLEntities
-                    window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("bin2htmlentities", val))   # Start Here
+                        # Bin => HTMLEntities
+                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("bin2htmlentities", val))   # Start Here
+
+                    except(ValueError):
+                        convertor.valueErrorMsg("binary")
 
                 # Hex => X
                 elif(len(values["_hexTextBox_"]) > 1): 
-                    val = values["_binTextBox_"].strip("\n").replace(" ", "")
+                    val = values["_hexTextBox_"].strip("\n").replace(" ", "")
 
-                    # Hex => Ascii
-                    window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))    # Start Here
+                    try:
+                        # Hex => Ascii
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))    # Start Here
 
+                    except(ValueError):
+                        convertor.valueErrorMsg("hex")
 
                 else:
                     layout = [
                         [sg.Image(data=errorImgData, size=(350,75))],
-                        [sg.Text("ERROR", size=(290, 1), justification="center")],
-                        [sg.Text("No Value Detected.", size=(290, 1), justification="center")],
+                        [sg.Text("* ERROR *", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#ff4265")],
+                        [sg.Text("No Value Detected.", size=(290, 1), justification="center", font=("Arial", 12))],
                     ]
                     sg.Window("Error", layout, size=(350, 175), finalize=True)
 
@@ -268,6 +301,7 @@ class SetupGUI():
         lightTheme = False
         
         # Set provided theme
+        sgThemeGlobal = theme
         sg.theme(theme)
         if(theme == "Default1"): lightTheme = True
         else: darkTheme = True
