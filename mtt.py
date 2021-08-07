@@ -85,7 +85,7 @@ class Convertor():
     def fromBin(self, convertMethod, convertValue):
         if(convertMethod == "bin2ascii"):
             try:
-                return binascii.unhexlify('%x' % int(str(convertValue), 2)).decode("ascii")
+                return binascii.unhexlify('%x' % int(str(convertValue), 2)).decode("ascii", "ignore")
             except(UnicodeDecodeError):
                 return "�"
 
@@ -191,7 +191,7 @@ class Convertor():
     def fromBase64(self, convertMethod, convertValue):
         if(convertMethod == "base642ascii"):
             try:
-                return base64.b64decode(convertValue).decode("ASCII")
+                return base64.b64decode(convertValue).decode("ascii", "ignore")
             
             except(UnicodeDecodeError):
                 return "�"
@@ -199,6 +199,13 @@ class Convertor():
             except ValueError:
                 return ""
 
+        if(convertMethod == "base642bin"):
+            asciiVal = self.fromBase64("base642ascii", convertValue)
+            binVal = self.fromAscii("ascii2bin", asciiVal)
+            return binVal
+
+        if(convertMethod == "base642decimal"):
+            pass
 
     def valueErrorMsg(self, convertMethod):
         layout = [
@@ -377,7 +384,10 @@ class SetupGUI():
                         window.FindElement("_asciiTextBox_").Update(convertor.fromBase64("base642ascii", val))
                        
                         # Base64 => Bin
-                        window.FindElement("_binTextBox_").Update(convertor.fromBase64("base642bin", val))  # Start Here
+                        window.FindElement("_binTextBox_").Update(convertor.fromBase64("base642bin", val))
+
+                        # Base64 => Decimal
+                        window.FindElement("_decimalTextBox_").Update(convertor.fromBase64("base642decimal", val))  # Start Here
 
                     except(ValueError):
                         convertor.valueErrorMsg("Base64")
