@@ -1,7 +1,7 @@
 from calendar import c
 import PySimpleGUI as sg
 from urllib.parse import quote
-import os, base64, codecs, html, binascii, csv
+import os, base64, codecs, html, binascii, sqlite3
 
 # Globals
 currentDir = os.path.dirname(__file__)
@@ -237,6 +237,7 @@ class Convertor():
             asciiVal = self.fromBase64("base642ascii", convertValue)
             htmlEncoded = self.fromAscii("ascii2htmlentities", asciiVal)
             return htmlEncoded
+
 
     def fromdec(self, convertMethod, convertValue):
         if(convertValue == "decimal2ascii"):
