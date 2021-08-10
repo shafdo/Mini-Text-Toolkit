@@ -306,7 +306,7 @@ class SetupGUI():
                     sg.Window("About", layout, size=(350, 200), finalize=True)
 
 
-            # Go and Clear btn events          
+            # Clear Feilds events          
             elif("_clear_" in event or "r:82" in event):
                 window.FindElement('_asciiTextBox_').Update('')
                 window.FindElement('_binTextBox_').Update('')
@@ -318,8 +318,8 @@ class SetupGUI():
                 window.FindElement('_urlEncodedTextBox_').Update('')
                 window.FindElement('_htmlEntitiesTextBox_').Update('')
 
-
-            elif(event == "_go_" or "g:71" in event):
+            # Go events
+            elif("_go_" in event or "g:71" in event):
                 convertor = Convertor()
 
                 # Ascii => X
@@ -501,6 +501,7 @@ class SetupGUI():
             [
                 "Options", 
                 [
+                    "GO [Ctrl+G]::_go_",
                     "Reset Feilds [Ctrl+R]::_clear_",
                     "View History [Ctrl+H]::_history_",
                     "Theme", 
