@@ -202,9 +202,9 @@ class Convertor():
                 return ""
 
         if(convertMethod == "base642bin"):
-            asciiVal = self.fromBase64("base642ascii", convertValue)
-            binVal = self.fromAscii("ascii2bin", asciiVal)
-            return binVal
+            # To decode base64 format you need to pass a bytes object to the base64.decodebytes(). Reference: https://stackoverflow.com/a/43208125 
+            base64Decoded = base64.decodebytes(convertValue.encode())
+            return " ".join(["{:08b}".format(x) for x in base64Decoded])
 
         if(convertMethod == "base642hex"):
             hexVal = base64.b64decode(convertValue.encode()).hex()
@@ -215,7 +215,14 @@ class Convertor():
             return ' '.join([str(i) for i in base64.standard_b64decode(convertValue)])
 
         if(convertMethod == "base642rot13"):
-            pass
+            asciiVal = self.fromBase64("base642ascii", convertValue)
+            rot13Val = self.fromAscii("ascii2rot13", asciiVal)
+            return rot13Val
+        
+        if(convertMethod == "base642rot47"):
+            asciiVal = self.fromBase64("base642ascii", convertValue)
+            rot47Val = self.fromAscii("ascii2rot47", asciiVal)
+            return rot47Val
 
 
     def valueErrorMsg(self, convertMethod):
@@ -404,7 +411,10 @@ class SetupGUI():
                         window.FindElement("_decimalTextBox_").Update(convertor.fromBase64("base642decimal", val))
 
                         # Base64 => Rot13
-                        window.FindElement("_rot13TextBox_").Update(convertor.fromBase64("base642rot13", val))  # Start Here
+                        window.FindElement("_rot13TextBox_").Update(convertor.fromBase64("base642rot13", val))
+
+                        # Base64 => Rot47
+                        window.FindElement("_rot47TextBox_").Update(convertor.fromBase64("base642rot47", val))  # Start Here
 
                     except(ValueError):
                         convertor.valueErrorMsg("Base64")
