@@ -36,6 +36,8 @@ class Convertor():
 
         return "".join(bitsSplitContainer)
 
+        # stringLine to list => [resut[i:i+skipper] for i in range(0, len(resut), skipper)]
+
 
     def fromAscii(self, convertMethod, convertValue):
         if(convertMethod == "ascii2bin"):
@@ -137,8 +139,8 @@ class Convertor():
             asciiVal = self.fromBin("bin2ascii", convertValue)
             htmlEncoded = self.fromAscii("ascii2htmlentities", asciiVal)
             return htmlEncoded
+       
 
-                
     def fromHex(self, convertMethod, convertValue):
         if(convertMethod == "hex2ascii"):
             try:
@@ -204,8 +206,17 @@ class Convertor():
             binVal = self.fromAscii("ascii2bin", asciiVal)
             return binVal
 
+        if(convertMethod == "base642hex"):
+            hexVal = base64.b64decode(convertValue.encode()).hex()
+            return " ".join([hexVal[i:i+2] for i in range(0, len(hexVal), 2)])
+
         if(convertMethod == "base642decimal"):
+            # You need to convert each byte from the decoded string to its decimal value. Reference: https://stackoverflow.com/a/38878737
+            return ' '.join([str(i) for i in base64.standard_b64decode(convertValue)])
+
+        if(convertMethod == "base642rot13"):
             pass
+
 
     def valueErrorMsg(self, convertMethod):
         layout = [
@@ -340,7 +351,7 @@ class SetupGUI():
                         window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBin("bin2urlencode", val))
 
                         # Bin => HTMLEntities
-                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("bin2htmlentities", val))   # Start Here
+                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("bin2htmlentities", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("binary")
@@ -382,12 +393,18 @@ class SetupGUI():
                     try:
                         # Base64 => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromBase64("base642ascii", val))
-                       
+                        
                         # Base64 => Bin
                         window.FindElement("_binTextBox_").Update(convertor.fromBase64("base642bin", val))
 
+                        # Base64 => Hex
+                        window.FindElement("_hexTextBox_").Update(convertor.fromBase64("base642hex", val))
+
                         # Base64 => Decimal
-                        window.FindElement("_decimalTextBox_").Update(convertor.fromBase64("base642decimal", val))  # Start Here
+                        window.FindElement("_decimalTextBox_").Update(convertor.fromBase64("base642decimal", val))
+
+                        # Base64 => Rot13
+                        window.FindElement("_rot13TextBox_").Update(convertor.fromBase64("base642rot13", val))  # Start Here
 
                     except(ValueError):
                         convertor.valueErrorMsg("Base64")
