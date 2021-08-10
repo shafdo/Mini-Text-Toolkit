@@ -21,6 +21,7 @@ class Convertor():
         '''
         pass
 
+
     def paddingFixer(self, convertValue, skipper):
         allXChars = [i for i in convertValue]
         bitsSplitContainer = []
@@ -193,7 +194,10 @@ class Convertor():
     def fromBase64(self, convertMethod, convertValue):
         if(convertMethod == "base642ascii"):
             try:
-                return base64.b64decode(convertValue).decode("ascii", "ignore")
+                return "".join([chr(i) for i in base64.standard_b64decode(convertValue)])
+                
+                # Previous solution: Strips up unicode characters too
+                # return base64.b64decode(convertValue).decode("ascii", "ignore")
             
             except(UnicodeDecodeError):
                 return "�"
@@ -223,6 +227,20 @@ class Convertor():
             asciiVal = self.fromBase64("base642ascii", convertValue)
             rot47Val = self.fromAscii("ascii2rot47", asciiVal)
             return rot47Val
+
+        if(convertMethod == "base642urlencoded"):
+            asciiVal = self.fromBase64("base642ascii", convertValue)
+            urlFriendlyVal = self.fromAscii("ascii2urlencode", asciiVal)
+            return urlFriendlyVal
+        
+        if(convertMethod == "base642htmlentities"):
+            asciiVal = self.fromBase64("base642ascii", convertValue)
+            htmlEncoded = self.fromAscii("ascii2htmlentities", asciiVal)
+            return htmlEncoded
+
+    def fromdec(self, convertMethod, convertValue):
+        if(convertValue == "decimal2ascii"):
+            pass
 
 
     def valueErrorMsg(self, convertMethod):
@@ -414,10 +432,28 @@ class SetupGUI():
                         window.FindElement("_rot13TextBox_").Update(convertor.fromBase64("base642rot13", val))
 
                         # Base64 => Rot47
-                        window.FindElement("_rot47TextBox_").Update(convertor.fromBase64("base642rot47", val))  # Start Here
+                        window.FindElement("_rot47TextBox_").Update(convertor.fromBase64("base642rot47", val))
+                        
+                        # Base64 => UrlEncoded
+                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBase64("base642urlencoded", val))
+                        
+                        # Base64 => HTMLEntities
+                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBase64("base642htmlentities", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("Base64")
+
+                # Decimal => X
+                elif(len(values["_decimalTextBox_"]) > 1): 
+                    val = values["_decimalTextBox_"].strip("\n").replace(" ", "")
+
+                    try:
+                        # Decimal => Ascii
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromdec("decimal2ascii", val))    # Start Here
+
+                    except(ValueError):
+                        convertor.valueErrorMsg("decimal")
+
 
                 else:
                     layout = [
