@@ -1,7 +1,9 @@
 from calendar import c
+from random import triangular
+from traceback import print_tb
 import PySimpleGUI as sg
-from urllib.parse import quote
-import os, base64, codecs, html, binascii, sqlite3
+from urllib.parse import quote, quote_from_bytes
+import os, base64, codecs, html, binascii, sqlite3, collections, operator
 from datetime import datetime
 
 # Globals
@@ -26,8 +28,7 @@ class historyLogger():
 
     def log(self, conn, convertFrom, convertValue):
         cursor = conn.cursor()
-        # today = datetime.today().strftime("%b-%d-%Y")
-        today = 'Aug-01-2021'
+        today = datetime.today().strftime("%b-%d-%Y")
         time = datetime.today().strftime("%H:%M")
         query = "INSERT INTO history(today, time, convertfrom, convertvalue) VALUES (?,?,?,?)"
         cursor.execute(query, (today, time, convertFrom, convertValue))
@@ -44,11 +45,17 @@ class historyLogger():
         Ex: Binary          1001110
         '''
         cursor = conn.cursor()
-        allDates = []
-        for row in cursor.execute('SELECT DISTINCT today FROM history ORDER BY today DESC;'):
-            allDates.append(row[0])
+        content = {}
 
-        print(allDates)
+        for row in cursor.execute("SELECT DISTINCT today FROM history ORDER BY today DESC;"):
+            content[str(row[0])] = []
+
+        for key, value in content.items():
+            query = "SELECT id, time, convertFrom, convertValue FROM history WHERE today='{}'".format(key)
+            for row in cursor.execute(query):
+                content[key].append(row)
+
+        return content
 
 
 conn = historyLogger().createDB()
@@ -343,7 +350,36 @@ class SetupGUI():
 
             # View History Options
             elif("_history_" in event or "h:72" in event):
-                getData = historyLogger().display(conn)
+                print(sgThemeGlobal)
+                getDataDict = historyLogger().display(conn)
+
+                getDataSortedList = sorted(getDataDict.items(), key = lambda x:datetime.strptime(x[0], '%b-%d-%Y'), reverse=True)
+
+                layout = [
+                    [sg.Text("History", size=(40, 1), justification="left", font=("Arial", 14, "bold"), text_color="#ebd234"), sg.Button("Clear History", button_color=('red'), font=("Arial", 11, "bold")), sg.Button("Export to CSV", button_color=('green'), font=("Arial", 11, "bold"))] if sgThemeGlobal != "Default1" else [sg.Text("History", size=(40, 1), justification="left", font=("Arial", 14, "bold"), text_color="#4266f5")],
+                    [sg.Text("", size=(2, 1))]                 
+                ]
+
+                counter = 0
+                content = ""
+
+                for vals in getDataSortedList:
+                    # Append Date
+                    key = vals[0]
+                    if(counter == 0): content += "[+] "+key
+                    else: content += "\n\n[+] "+key
+                    
+                    # Content
+                    dataString = ""
+                    for val in vals[1]:
+                        dataString += "\n\t> Time : {}; ConvertMethod : {}; Value : {}\n".format(val[1], val[2], val[3])
+                        content += dataString
+
+                    counter += 1
+
+                layout.append([sg.Multiline(content, size=(100, 100), font=("Arial", 12, "bold"))])
+
+                sg.Window("History", layout, size=(750, 350), finalize=True)
 
 
             # Clear Feilds events Options    
