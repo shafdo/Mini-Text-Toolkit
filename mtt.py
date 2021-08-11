@@ -2,25 +2,59 @@ from calendar import c
 import PySimpleGUI as sg
 from urllib.parse import quote
 import os, base64, codecs, html, binascii, sqlite3
+from datetime import datetime
 
 # Globals
 currentDir = os.path.dirname(__file__)
 sgThemeGlobal = ""
+platform = "windows" if(os.name) else "linux"
 
 # Icons
 aboutImgData = b'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFP0lEQVR4nO2Y7U9TVxzHGXvp9hcse7f1uaVPSQtuMxmSZWuoXUYMwqI4tbzwxabR1czE4KagYWlLl2I7kLbJeNgLN6ZbdFBELSAlS5SRLBKzFyzbMhITH0qviobffqeu19729nIv9CHc3W/yDYHb8zu/7+dezj09FRWSJEmSJEmSJEmSiiOz2bzFZDL1G43GOfTvPD1HxhgMhrfK3f+6hEFOYxBYj0mNcudYk7D5vesNn+E95c4jVC9g0wssd/MH/HkE7crjI/iZYRYAC6RmuUPxFv7vvsYSPsJ3PH4+nD2e1CxmzwUVNmxhuYsNAsY3sACoLmbPBRXebWt2AHwb2PmOx7D1LONritlzQSUKAAAVlY8m7bbkhL19KeZwC/Gt720DoRO1kOkb39qG+Y6/MfTucPb4376zDQntI9X7VbtNcPjERP2HVLw58fCXfSAGU9PNicSUvZlXeGpqWxM189FKuZsuOATMlLj23o7VAVxvus8YPNOC3rVB3ZL9JNzjDP94qn77s9C7gbr2DiRHTbA0atjQTkbNqSwkUwpCrH47x+P/wRihlrxcXfbGCw4CM5Fs1FRDND8AXPiSV98ue7NFg3ClNrUgsoZ/MG1XUTM7y95ksU0yJsZtmhwAySlHX3JyW9kbLPpTgBmpSUdvDoCH041/Jq9sKXuDRQeAGSnMyggPP9dtouK7VpZGjbwL3R8xw4+Rw9B/9jRMDu4ueZDY4B74pvcUXIgcggdC3lZRE1DxlhWYsL9MAzi23+I62lp958BO7Xw+H26pmh84rr6TdtDtWg6Hw5ByKAR97fZE+lrvUc0iV621uPczzWK6fl+7I0HPjf7a/elyZm+HWrS3uWqRrMf2V7toAHK5/JRMJgMuW0wyuPjl67R7zrghs4mw72P62qhHzllrLR7Bmun64a5PGHP3BNyM3qym1efHzB00AK1Wu1U4AA+jiZDvQOkA+A4y5u4NeAUDwMy1mcvAi2q1+qlOp4N83mzVwe0hDe2g73Po7u6mPfiVk742EdDkrbNWx848n3vQ38qYm/SS2dtmC3ctlUr1lGRmLIRI5G+ug8k3apgLpL/DCW1tbbTP+x30tZk+Q6EOQ2nHzz6f+7z/fcbc/o5WRm9v1nDXwqx/5bwG8Y+z6wFwobuUABzrBXAzB4BGo4kKARDqbGI0Md6ztWQALvfUMeYOde4QCmCEDcCQEACxgB48Xzih/bgLgu2NMD+gKRmAW/1qCJxshJM4t/eEE9cHvSAAmHUgBwAugl1CANwMqxgr7x/ndCUDsHBOy5h7NqLiDcBoNAJmdecAwJXRSS7yBXD3oh6mg0oY88rg14iaca3YAIhn8QaQueNBBdy9xP8JMBgMBMDeHABVVVV6NG8AXC4FAC5zAdDr9cRVOQBQlfiOXBY7AMz4mGRlA8C5FxALANY9QAaAvHsBEQHI3QOkxbUXEBGA3D1ABoBBsQMgGbkAeMUMgLzmMaMnLwDcC+zLtxcQCwDWPUBaXHsBMQAg2fLtAdKqxEWCdS8gBgCce4CMdWBRrADw5v7DGf6/dYB1MyQGACQbHwBzaNEBIJmUSuUcHwBecmiIH059cUi/FTYiANI7yUCykEysX4NZALykUCgeZRwfA/4OVrMCxn1yXh7rUqTGFNLRLiXv+avNytQY0ns6B8mEi+CmVQEQ4UJYh4OecB2Lc7nYx+KrOftYHEE8IUf/vMKnhY/Lq/g0jCC5e1hg2WKQL0c9MuDjnzoVK2RMIU1q8p3fan42hvSOGS7h+/8VQeElSZIkSZIkSZL+D/oXjKMfxw94DhgAAAAASUVORK5CYII='
 errorImgData = b'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'
 
-class Convertor():
+class historyLogger():
+    def createDB(self):
+        conn = sqlite3.connect('.mtt-history.db')
+        # if(platform == "windows"): os.system("attrib +h .mtt-history.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute('CREATE TABLE history ( id INTEGER PRIMARY KEY AUTOINCREMENT, today DATE, time INTEGER, convertFrom TEXT, convertValue TEXT )')
+        except(sqlite3.OperationalError):
+            pass
+        return conn
 
-    def historyLogger(self, ):
+    def log(self, conn, convertFrom, convertValue):
+        cursor = conn.cursor()
+        # today = datetime.today().strftime("%b-%d-%Y")
+        today = 'Aug-01-2021'
+        time = datetime.today().strftime("%H:%M")
+        query = "INSERT INTO history(today, time, convertfrom, convertvalue) VALUES (?,?,?,?)"
+        cursor.execute(query, (today, time, convertFrom, convertValue))
+        conn.commit()
+
+        for row in cursor.execute('SELECT * FROM history'):
+            print(row)
+        
+
+    def display(self, conn):
         ''' History Output Structure
         /\/\/\/\/\/\/ DATE /\/\/\/\/\/\/
         ConvertFromType     Value
         Ex: Binary          1001110
         '''
-        pass
+        cursor = conn.cursor()
+        allDates = []
+        for row in cursor.execute('SELECT DISTINCT today FROM history ORDER BY today DESC;'):
+            allDates.append(row[0])
 
+        print(allDates)
+
+
+conn = historyLogger().createDB()
+
+
+class Convertor():
 
     def paddingFixer(self, convertValue, skipper):
         allXChars = [i for i in convertValue]
@@ -285,7 +319,7 @@ class SetupGUI():
                 pass
 
 
-            # Help Options
+            # Help Tab
             elif(event == "About::_about_"):
                 if(sgThemeGlobal == "Dark"):
                     layout = [
@@ -307,7 +341,12 @@ class SetupGUI():
                     sg.Window("About", layout, size=(350, 200), finalize=True)
 
 
-            # Clear Feilds events          
+            # View History Options
+            elif("_history_" in event or "h:72" in event):
+                getData = historyLogger().display(conn)
+
+
+            # Clear Feilds events Options    
             elif("_clear_" in event or "r:82" in event):
                 window.FindElement('_asciiTextBox_').Update('')
                 window.FindElement('_binTextBox_').Update('')
@@ -319,6 +358,7 @@ class SetupGUI():
                 window.FindElement('_urlEncodedTextBox_').Update('')
                 window.FindElement('_htmlEntitiesTextBox_').Update('')
 
+
             # Go events
             elif("_go_" in event or "g:71" in event):
                 convertor = Convertor()
@@ -326,6 +366,7 @@ class SetupGUI():
                 # Ascii => X
                 if(len(values["_asciiTextBox_"]) > 1): 
                     val = values["_asciiTextBox_"].strip("\n")
+                    historyLogger().log(conn, "ascii", val)
 
                     # Ascii => Bin
                     window.FindElement("_binTextBox_").Update(convertor.fromAscii("ascii2bin", val))
@@ -354,6 +395,8 @@ class SetupGUI():
                 # Binary => X
                 elif(len(values["_binTextBox_"]) > 1): 
                     val = values["_binTextBox_"].strip("\n").replace(" ", "")
+                    historyLogger().log(conn, "binary", val)
+
                     try:
                         # Bin => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromBin("bin2ascii", val))
@@ -385,6 +428,8 @@ class SetupGUI():
                 # Hex => X
                 elif(len(values["_hexTextBox_"]) > 1): 
                     val = values["_hexTextBox_"].strip("\n").replace(" ", "").replace("0x", "")
+                    historyLogger().log(conn, "hex", val)
+
                     try:
                         # Hex => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))
@@ -416,6 +461,8 @@ class SetupGUI():
                 # Base64 => X
                 elif(len(values["_base64TextBox_"]) > 1): 
                     val = values["_base64TextBox_"].strip("\n").replace(" ", "")
+                    historyLogger().log(conn, "base64", val)
+
                     try:
                         # Base64 => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromBase64("base642ascii", val))
@@ -447,6 +494,7 @@ class SetupGUI():
                 # Decimal => X
                 elif(len(values["_decimalTextBox_"]) > 1): 
                     val = values["_decimalTextBox_"].strip("\n").replace(" ", "")
+                    historyLogger().log(conn, "decimal", val)
 
                     try:
                         # Decimal => Ascii
@@ -465,6 +513,7 @@ class SetupGUI():
                     sg.Window("Error", layout, size=(350, 175), finalize=True)
 
         window.close()
+        conn.close()
 
     
     def windowSetup(self, theme="Dark"):
