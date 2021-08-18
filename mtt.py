@@ -1,9 +1,9 @@
-from calendar import c
-from random import triangular
-from traceback import print_tb
+# from calendar import c
+# from random import triangular
+# from traceback import print_tb
 import PySimpleGUI as sg
 from urllib.parse import quote, quote_from_bytes
-import os, base64, codecs, html, binascii, sqlite3, collections, operator
+import os, base64, codecs, html, binascii, sqlite3, tempfile
 from datetime import datetime
 
 # Globals
@@ -350,7 +350,6 @@ class SetupGUI():
 
             # View History Options
             elif("_history_" in event or "h:72" in event):
-                print(sgThemeGlobal)
                 getDataDict = historyLogger().display(conn)
 
                 getDataSortedList = sorted(getDataDict.items(), key = lambda x:datetime.strptime(x[0], '%b-%d-%Y'), reverse=True)
