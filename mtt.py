@@ -86,14 +86,14 @@ class historyLogger():
         print(tempFile)
 
         # Write default HTML stuff
-        defaultDocumentHTML = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MTT History</title></head><body><style>body{background-color:#222}.row{margin-bottom:50px}.para-wrapper{margin-left:25px;padding-left:15px;border-left:4px solid #ff007b}.divider{border:none;border-bottom:4px solid #ff007b}.green{color:#53e623}h2{color:#37b2ca}.text-white{color: #c1c1c1}p{font-size:18px;color:#c1c1c1;font-family:Ubuntu,sans-serif;line-height:30px}.pl-4{padding-left:10px}#content{margin:25px}#heading{color:#ffe000;font-family:Ubuntu,sans-serif;}</style><h1 id="heading">MTT Histroy</h1><ul class="text-white"><li><p class="pl-4">Thank you for trying out MTT :).</p></li></ul><div id="content"></div></body></html>'
+        defaultDocumentHTML = r'<!DOCTYPE html><html lang="en"> <head> <meta charset="UTF-8"/> <meta http-equiv="X-UA-Compatible" content="IE=edge"/> <meta name="viewport" content="width=device-width,initial-scale=1"/> <title>MTT History</title> <style>body{background-color:#222}.row{margin-bottom:50px}.para-wrapper{margin-left:25px;padding-left:15px;border-left:4px solid #ff007b}.divider{border:none;border-bottom:4px solid #ff007b}.green{color:#53e623}h2{color:#37b2ca}.text-white{color:#c1c1c1}p{font-size:18px;color:#c1c1c1;font-family:Ubuntu,sans-serif;line-height:30px}.pl-4{padding-left:10px}#content{margin:25px}#header-wrapper>h1{padding-left: 20px;color:#ffe000;font-family:Ubuntu,sans-serif}#export2csv{background-color:#4aca37;border-radius:50px;height:40px;color:#fff;font-weight:700;padding:0 20px;margin:20px;font-size:16px;border:3px solid #4aca37;cursor:pointer;transition:.5s;}#export2csv:hover{border:3px solid #fff;background-color:transparent;}</style> </head> <body> <div id="header-wrapper" style="display: flex; justify-content: space-between;"> <h1>MTT Histroy</h1> <button id="export2csv">Export to CSV</button> </div><ul class="text-white"> <li><p class="pl-4">Thank you for trying out MTT :).</p></li></ul> <div id="content"></div><script>document.querySelector("#export2csv").addEventListener("click",e=>{e.stopPropagation();const t=[["Time","Convert From","Value"]];document.querySelectorAll("p").forEach(e=>{let a=[];e.childNodes.forEach(e=>{switch(e.className){case"time-value":case"convert-from-value":case"convert-value":a.push(e.innerText)}}),0!=a.length&&t.push(a)});let a=t.map(function(e){return e.join()}).join("\n");a="data:text/csv;charset=utf-8,"+escape(a);var c=document.createElement("a");c.href=a,c.download="mttHistory.csv",c.click()});</script></body></html>'
         soup = BeautifulSoup(defaultDocumentHTML, "html.parser")
         soup.find("div", {"id": "content"}).append(BeautifulSoup(html, 'html.parser'))
 
         f = open(tempFile, "w")
         f.write(soup.prettify())
         f.close()
-
+        
         webbrowser.open(tempFile)
 
 
@@ -399,6 +399,8 @@ class SetupGUI():
 
                 getDataSortedList = sorted(getDataDict.items(), key = lambda x:datetime.strptime(x[0], '%b-%d-%Y'), reverse=True)
 
+                print(getDataSortedList)
+
                 content = ""
 
                 for row in getDataSortedList:
@@ -406,7 +408,7 @@ class SetupGUI():
 
                     for data in row[1]:
                         id, time, fromType, value = data
-                        content += "<p><span class='green'>Time: </span> {} <br><span class='green'>Convert From: </span> {} <br> <span class='green'>Value: </span> {}</p><hr class='divider'>".format(time, fromType, value)
+                        content += "<p><span class='green-heading'>Time: </span> <span class='time-value'>{}</span> <br><span class='green-heading'>Convert From: </span> <span class='convert-from-value'>{}</span> <br> <span class='green-heading'>Value: </span> <span class='convert-value'>{}</span></p><hr class='divider'>".format(time, fromType, value)
 
                     content += "</div></div>"
 
@@ -608,15 +610,10 @@ class SetupGUI():
         historyLogger().removeTempFolder(tempFolderPath)
 
     
-    def windowSetup(self, theme="Dark"):
-        darkTheme = False
-        lightTheme = False
-        
+    def windowSetup(self, theme="Dark"):       
         # Set provided theme
         sgThemeGlobal = theme
         sg.theme(theme)
-        if(theme == "Default1"): lightTheme = True
-        else: darkTheme = True
 
         # Fonts & Colors 
         fontHeading = ("Terminal", 15)
