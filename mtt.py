@@ -97,7 +97,6 @@ class historyLogger():
         webbrowser.open(tempFile)
 
 
-
 conn = historyLogger().createDB()
 tempFolderPath = historyLogger().createTempFolder()
 print(tempFolderPath)
@@ -120,7 +119,7 @@ class Convertor():
 
         return "".join(bitsSplitContainer)
 
-        # stringLine to list => [resut[i:i+skipper] for i in range(0, len(resut), skipper)]
+        # stringLine to list => [result[i:i+skipper] for i in range(0, len(result), skipper)]
 
 
     def fromAscii(self, convertMethod, convertValue):
@@ -323,13 +322,18 @@ class Convertor():
 
 
     def fromdec(self, convertMethod, convertValue):
-        if(convertValue == "decimal2ascii"):
+        if(convertMethod == "decimal2ascii"):
+            convertValue = self.paddingFixer(convertValue, 2)
+            asciiVal = "".join([chr(int(num)) for num in [convertValue[i:i+2] for i in range(0, len(convertValue), 2)]])
+            return asciiVal
+
+        if(convertMethod == "decimal2bin"):
             pass
 
 
     def valueErrorMsg(self, convertMethod):
         layout = [
-            [sg.Image(data=warningImgData, size=(350,75))],
+            [sg.Image(data=errorImgData, size=(350,75))],
             [sg.Text("* ERROR *", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#ff4265")],
             [sg.Text("Invalid {} value detected.".format(convertMethod), size=(290, 1), justification="center", font=("Arial", 12))],
         ]
@@ -581,7 +585,10 @@ class SetupGUI():
 
                     try:
                         # Decimal => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromdec("decimal2ascii", val))    # Start Here
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromdec("decimal2ascii", val))
+
+                        # Decimal => Binary
+                        window.FindElement("_binTextBox_").Update(convertor.fromdec("decimal2bin", val))    # Start Here
 
                     except(ValueError):
                         convertor.valueErrorMsg("decimal")
@@ -589,7 +596,7 @@ class SetupGUI():
 
                 else:
                     layout = [
-                        [sg.Image(data=warningImgData, size=(350,75))],
+                        [sg.Image(data=errorImgData, size=(350,75))],
                         [sg.Text("* ERROR *", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#ff4265")],
                         [sg.Text("No Value Detected.", size=(290, 1), justification="center", font=("Arial", 12))],
                     ]
@@ -660,42 +667,25 @@ class SetupGUI():
         ]
 
         # Lay the stuff out accordingly
-        if darkTheme == True:
-            layout = [  
-                [sg.Menu(menu_stc)],
+        layout = [  
+            [sg.Menu(menu_stc)],
 
-                [sg.Text('Ascii', size=(40, 1), justification="center", font=fontHeading), sg.Text('Binary', size=(40, 1), justification="center", font=fontHeading), sg.Text('Hexadecimal', size=(40, 1), justification="center", font=fontHeading)],    
-                [sg.Multiline(size=(35, 7), key='_asciiTextBox_', font=fontTextBox, text_color=fontColors["lightColor5"]), sg.Multiline(size=(35, 7), key='_binTextBox_', font=fontTextBox, text_color=fontColors["lightColor1"]), sg.Multiline(size=(35, 7), key='_hexTextBox_', font=fontTextBox, text_color=fontColors["lightColor2"])],
-                
-                [sg.Text('Base64', size=(40, 1), justification="center", font=fontHeading), sg.Text('Decimal', size=(40, 1), justification="center", font=fontHeading), sg.Text('Rot13', size=(40, 1), justification="center", font=fontHeading)],    
-                [sg.Multiline(size=(35, 7), key='_base64TextBox_', font=fontTextBox, text_color=fontColors["lightColor2"]), sg.Multiline(size=(35, 7), key='_decimalTextBox_', font=fontTextBox, text_color=fontColors["lightColor5"]), sg.Multiline(size=(35, 7), key='_rot13TextBox_', font=fontTextBox, text_color=fontColors["lightColor3"])],
-                
-                [sg.Text('Rot47', size=(40, 1), justification="center", font=fontHeading), sg.Text('URL Encoded', size=(40, 1), justification="center", font=fontHeading), sg.Text('HTML Entities', size=(40, 1), justification="center", font=fontHeading)],    
-                [sg.Multiline(size=(35, 7), key='_rot47TextBox_', font=fontTextBox, text_color=fontColors["lightColor5"]), sg.Multiline(size=(35, 7), key='_urlEncodedTextBox_', font=fontTextBox, text_color=fontColors["lightColor3"]), sg.Multiline(size=(35, 7), key='_htmlEntitiesTextBox_', font=fontTextBox, text_color=fontColors["lightColor1"])],
-                
-                [sg.Button('GO [Ctrl+G]', size=(25, 1), key='_go_'), sg.Button('Reset Feilds [Ctrl+R]', size=(25, 1), key="_clear_")] 
-            ]
-        
-        else:
-            layout = [  
-                [sg.Menu(menu_stc)],
-                
-                [sg.Text('Ascii', size=(40, 1), justification="center", font=fontHeading), sg.Text('Binary', size=(40, 1), justification="center", font=fontHeading), sg.Text('Hexadecimal', size=(40, 1), justification="center", font=fontHeading)],    
-                [sg.Multiline(size=(35, 7), key='_asciiTextBox_', font=fontTextBox, text_color=fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_binTextBox_', font=fontTextBox, text_color=fontColors["darkColor1"]), sg.Multiline(size=(35, 7), key='_hexTextBox_', font=fontTextBox, text_color=fontColors["darkColor2"])],
-                
-                [sg.Text('Base64', size=(40, 1), justification="center", font=fontHeading), sg.Text('Decimal', size=(40, 1), justification="center", font=fontHeading), sg.Text('Rot13', size=(40, 1), justification="center", font=fontHeading)],    
-                [sg.Multiline(size=(35, 7), key='_base64TextBox_', font=fontTextBox, text_color=fontColors["darkColor2"]), sg.Multiline(size=(35, 7), key='_decimalTextBox_', font=fontTextBox, text_color=fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_rot13TextBox_', font=fontTextBox, text_color=fontColors["darkColor3"])],
-                
-                [sg.Text('Rot47', size=(40, 1), justification="center", font=fontHeading), sg.Text('URL Encoded', size=(40, 1), justification="center", font=fontHeading), sg.Text('HTML Entities', size=(40, 1), justification="center", font=fontHeading)],    
-                [sg.Multiline(size=(35, 7), key='_rot47TextBox_', font=fontTextBox, text_color=fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_urlEncodedTextBox_', font=fontTextBox, text_color=fontColors["darkColor3"]), sg.Multiline(size=(35, 7), key='_htmlEntitiesTextBox_', font=fontTextBox, text_color=fontColors["darkColor1"])],
-                
-                [sg.Text("spacer", visible=False)],
-
-                [sg.Button('GO [Ctrl+G]', size=(25, 1), key='_go_'), sg.Button('Reset Feilds [Ctrl+R]', size=(25, 1), key="_clear_")] 
-            ]
-
+            [sg.Text('Ascii', size=(40, 1), justification="center", font=fontHeading), sg.Text('Binary', size=(40, 1), justification="center", font=fontHeading), sg.Text('Hexadecimal', size=(40, 1), justification="center", font=fontHeading)],    
+            [sg.Multiline(size=(35, 7), key='_asciiTextBox_', font=fontTextBox, text_color=fontColors["lightColor5"] if(sgThemeGlobal == "Dark") else fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_binTextBox_', font=fontTextBox, text_color=fontColors["lightColor1"] if(sgThemeGlobal == "Dark") else fontColors["darkColor1"]), sg.Multiline(size=(35, 7), key='_hexTextBox_', font=fontTextBox, text_color=fontColors["lightColor2"] if(sgThemeGlobal == "Dark") else fontColors["darkColor2"])],
+            
+            [sg.Text('Base64', size=(40, 1), justification="center", font=fontHeading), sg.Text('Decimal', size=(40, 1), justification="center", font=fontHeading), sg.Text('Rot13', size=(40, 1), justification="center", font=fontHeading)],    
+            [sg.Multiline(size=(35, 7), key='_base64TextBox_', font=fontTextBox, text_color=fontColors["lightColor2"] if(sgThemeGlobal == "Dark") else fontColors["darkColor2"]), sg.Multiline(size=(35, 7), key='_decimalTextBox_', font=fontTextBox, text_color=fontColors["lightColor5"] if(sgThemeGlobal == "Dark") else fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_rot13TextBox_', font=fontTextBox, text_color=fontColors["lightColor3"] if(sgThemeGlobal == "Dark") else fontColors["darkColor3"])],
+            
+            [sg.Text('Rot47', size=(40, 1), justification="center", font=fontHeading), sg.Text('URL Encoded', size=(40, 1), justification="center", font=fontHeading), sg.Text('HTML Entities', size=(40, 1), justification="center", font=fontHeading)],    
+            [sg.Multiline(size=(35, 7), key='_rot47TextBox_', font=fontTextBox, text_color=fontColors["lightColor5"] if(sgThemeGlobal == "Dark") else fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_urlEncodedTextBox_', font=fontTextBox, text_color=fontColors["lightColor3"] if(sgThemeGlobal == "Dark") else fontColors["darkColor3"]), sg.Multiline(size=(35, 7), key='_htmlEntitiesTextBox_', font=fontTextBox, text_color=fontColors["lightColor1"] if(sgThemeGlobal == "Dark") else fontColors["darkColor1"])],
+            
+            [sg.Button('GO [Ctrl+G]', size=(25, 1), key='_go_'), sg.Button('Reset Feilds [Ctrl+R]', size=(25, 1), key="_clear_")] 
+        ]
+            
         return sg.Window("Mini Text Toolkit (MTT)", layout, finalize=True, return_keyboard_events=True)
 
 
-setupgui = SetupGUI()
+
+if (__name__ == "__main__"):
+    setupgui = SetupGUI()
 
