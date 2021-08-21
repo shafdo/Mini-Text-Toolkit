@@ -2,7 +2,7 @@
 # Mini Text Toolkit (MTT)
 
 <p align="center">
-<img src="https://cdn2.iconfinder.com/data/icons/tools-flat-v-1-free/128/toolbox_-256.png" width=200>
+<img src="https://camo.githubusercontent.com/26846cd581f609dcc7639efbe09b4a43fad5c8c7e335e82327f2d87b66832d49/68747470733a2f2f63646e322e69636f6e66696e6465722e636f6d2f646174612f69636f6e732f746f6f6c732d666c61742d762d312d667265652f3132382f746f6f6c626f785f2d3235362e706e67" width=200>
 </p>
 
 ## Overview
