@@ -37,3 +37,7 @@ ___
 ## Bugs
 
 * If you found any bug please submit an issue or contact me shafdo@protonmail.com.
+
+## Final Note
+
+* If you don't mind feel free to share mtt among the people you know and show some ❤️ to this project. Thank you.

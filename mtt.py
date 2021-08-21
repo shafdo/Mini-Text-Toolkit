@@ -8,7 +8,7 @@ from datetime import datetime
 try: 
     import PySimpleGUI as sg 
 except(ModuleNotFoundError):
-    print("[-] Module not found: pysimplegui\n[-] Try installing it with: pip install pysimplegui")
+    print("[Error] Module not found: pysimplegui\n[Info] Try installing it with: pip install pysimplegui")
     exit()
 
 
@@ -82,7 +82,11 @@ class historyLogger():
 
 
     def removeTempFolder(self, tempFolderPath):
-        shutil.rmtree(tempFolderPath)
+        print("[Info] Removing mtt temp folder.")
+        try: shutil.rmtree(tempFolderPath)
+        except: print("[Error] Removing temp folder ended up with an error.")
+
+        print("[Info] Removing temp folder successfull.")
 
 
     def webTempFile(self, tempFolderPath, html):
@@ -97,12 +101,14 @@ class historyLogger():
         f.write(soup.prettify())
         f.close()
         
+        print("[Info] Opening mtt history.")
         webbrowser.open(tempFile)
 
 
 conn = historyLogger().createDB()
 tempFolderPath = historyLogger().createTempFolder()
-print(tempFolderPath)
+print("\n"+r"/\/\/\/\/ Starting Logger /\/\/\/\/")
+print('[Info] Temp folder created at path: {}'.format(tempFolderPath))
 
 
 class Convertor():
@@ -817,6 +823,8 @@ class SetupGUI():
         conn.close()
         
         historyLogger().removeTempFolder(tempFolderPath)
+
+        print("\n[Exit Note] Thank you for trying out mtt. Gave a good day :).")
 
     
     def windowSetup(self, theme="Dark"):
