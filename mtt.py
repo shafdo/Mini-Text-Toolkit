@@ -3,12 +3,16 @@
 from itertools import count
 from urllib.parse import quote, unquote
 import os, shutil, base64, codecs, html, binascii, sqlite3, tempfile, webbrowser, pyperclip, time, requests
-from bs4 import BeautifulSoup
 from datetime import datetime
+try: 
+    from bs4 import BeautifulSoup
+except(ModuleNotFoundError):
+    print("[Error] Module not found: bs4\n[Info] Try installing it with: pip3 install bs4")
+    exit()
 try: 
     import PySimpleGUI as sg 
 except(ModuleNotFoundError):
-    print("[Error] Module not found: pysimplegui\n[Info] Try installing it with: pip install pysimplegui")
+    print("[Error] Module not found: pysimplegui\n[Info] Try installing it with: pip3 install pysimplegui")
     exit()
 
 
