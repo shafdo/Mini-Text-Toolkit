@@ -12,7 +12,7 @@
 ## Pre-requisites
 
 * Python 3
-* A module named pysimplegui. You can easily install it with `pip install pysimplegui` or run mtt and .
+* A module named pysimplegui. You can easily install it with `pip install pysimplegui`.
 
 ## Installation
 

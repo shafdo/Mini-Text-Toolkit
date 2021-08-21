@@ -8,7 +8,7 @@ from datetime import datetime
 try: 
     import PySimpleGUI as sg 
 except(ModuleNotFoundError):
-    print("[-] Module not found: pysimplegui\n[-] Try pip install pysimplegui")
+    print("[-] Module not found: pysimplegui\n[-] Try installing it with: pip install pysimplegui")
     exit()
 
 
