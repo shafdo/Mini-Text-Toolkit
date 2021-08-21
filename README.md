@@ -20,8 +20,8 @@
     * ```wget https://raw.githubusercontent.com/shafdo/Mini-Text-Toolkit/master/mtt.py -O mtt.py```
     * ```curl https://raw.githubusercontent.com/shafdo/Mini-Text-Toolkit/master/mtt.py -O mtt.py```
 
-* Clone the repo
-`git clone https://github.com/shafdo/Mini-Text-Toolkit.git`
+* Clone the repo:
+    * `git clone https://github.com/shafdo/Mini-Text-Toolkit.git`
 
 
 ## Usage
