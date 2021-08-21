@@ -226,12 +226,8 @@ class Convertor():
 
     def fromHex(self, convertMethod, convertValue):
         if(convertMethod == "hex2ascii"):
-            try:
-                bytes_object = bytes.fromhex(convertValue.replace("0x", ""))
-                asciiString = bytes_object.decode("ASCII")
-                return asciiString
-            except:
-                return ""
+            convertValue = self.paddingFixer(convertValue, 2)
+            return "".join(chr(int(val, 16)) for val in [convertValue[i:i+2] for i in range(0, len(convertValue), 2)])
 
         if(convertMethod == "hex2bin"):
             binaryString = bin(int(convertValue, 16))[2:].zfill(8)
@@ -368,6 +364,9 @@ class Convertor():
             return self.fromAscii("ascii2htmlentities", asciiVal)
 
 
+    def fromrot13(self, convertMethod, ConvertValue):
+        if(convertMethod == "rot132ascii"):
+            pass
 
 
     def valueErrorMsg(self, convertMethod):
@@ -437,8 +436,6 @@ class SetupGUI():
                 getDataDict = historyLogger().display(conn)
 
                 getDataSortedList = sorted(getDataDict.items(), key = lambda x:datetime.strptime(x[0], '%b-%d-%Y'), reverse=True)
-
-                print(getDataSortedList)
 
                 content = ""
 
@@ -651,6 +648,19 @@ class SetupGUI():
 
                     except(ValueError):
                         convertor.valueErrorMsg("decimal")
+
+                # Rot13 => X
+                elif(len(values["_rot13TextBox_"]) > 1): 
+                    val = values["_rot13TextBox_"].strip("\n").replace(" ", "")
+                    historyLogger().log(conn, "rot13", val)
+
+                    try:
+                        # Rot13 => Ascii
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromrot13("rot132ascii", val))  # Start Here
+
+
+                    except(ValueError):
+                        convertor.valueErrorMsg("rot13")
 
 
                 else:
