@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
+from itertools import count
 from urllib.parse import quote, quote_from_bytes
-import os, shutil, base64, codecs, html, binascii, sqlite3, tempfile, webbrowser
+import os, shutil, base64, codecs, html, binascii, sqlite3, tempfile, webbrowser, pyperclip, time
 from bs4 import BeautifulSoup
 from datetime import datetime
 try: 
@@ -21,6 +22,8 @@ aboutImgData = b'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAA
 warningImgData = b'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'
 tickImgData = b'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'
 errorImgData = b'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAC+RJREFUeF7tm3l0VNUdx7/3vTdLtknYTMKWpEKlGVAxCdlYAqIFAlalcmrh2Gq1VdxR8bAJIoKo4IK2Lpxaj2itK7K0ImgCZEUSK5JELUICSBaWhMySWe/tuZMMRvNm5r6ZgJ6D75z8M+937+/3+7zfvff3+70XgvP8Iue5//gZwM8RcJ4TOGdLoPmq7ERG9SMZYReBIYUQJFCGWM5fIrAyhjYQNBBGviKSa3/ipsrmc/FszhoAtgxSS3X+5ZSRa0AxEQQjNDpUB0aLCJHfS8zcXUSWgWocLyTe6wAap44bAAV3grEbAQwWsiKUEGVHQPAKk3TrBm4uPhFKXMv9XgPQUDi2jwFsCSX4MwGJ0WKEqCwDsxGQFxyKsiJtY3Gb6LhgchEDYABpKsy/gRHyOAEu6A2jQs3BGJoh4YGBm0teCyUb6n5EAE5OzTY5JN3LEsGsUIrOxn1C6UYnkW5K2VrSGu78YQNonJFvZhSbCSFp4SrvjXEMOAgmTR+4dVddOPOFBaBx+rgxYHQrCOkfjtKzMKaVSmTGoE27S7XOrRlAc+H4PAq6HQTRWpWdTXm+QUoEk5M2l1Zo0aMJAA97MLILQF8tSs6ZLCMnoWB88ge7a0V1CgM4dHVBgsHtrv6x13woxxjBN8YOY0bfHTtOh5Ll94UBNM4Y+y4YrhWZ9Ccg807ylpLrROwQAtBYmP8HEPIPkQl/KjIMbM7ALaWvh7InJACe4ekIvtSa5JC+/cBOnQylX+h+OHPxZMmpU0aEyhhDAmgqzF/LCLlXyNIuIemSTMj3LIT3zVdAt23WMrSHrDRpCuQ5f4HnudVg1Zo2eFCwJwZtKZ0fzICgAI5eM6af5NLVE0J8ZavIRS7NgnL3IkCnAxiDd8NLoNs2iQxVcX4q5BtvBwgB87hB160GrSoXnosfjSC61GAFVFAAjTPGLQdjS0Q1ktFZUO7qct4/iDHQ19fD++FG0Wl8ctLl0yD/ca7P+TOXxwPvc6tB95Zpmevh5C0lywINCAiA1/NNe/LrIZEhQtr0BujWrAf6qKcIdMPLwhDkKVdDmnOLutrWU3DfdzPgcgqZBYbDSVklaYH6CQEBNF+VfwWl5CMxLV1SQ9MgLVgJOc6kOsz79qugH7wVdEp56jWQZt+sKkNtVtBVi8DqD2gyC4xNSt5aWqQ2KCCAxhlj/wqG27RoarbZ4BiYgrTH1gWEQN95Dd6Nb6pOK02bCfn3N6nDs9lQv/Au6BsOIikmWkMGw7Mdti55c+ldmgAcm5b3NZGk4aIAGBi+bbfB5nbDeOEvOyHExqk/yXc3wPv+P793TyqcCfl6deep3YZDC+9Gx1e1iNHpMMgUAyKew/FeWt2gLSXpwgBaphUkeSVPo6jz3fY7HG23wO7xIHrESKSufBpSlHrNRLtBkKb/FvLveAet50UdDtQvuQ/2/Z8hSqdgcFwspO4bo4CRDGCSjiYlvV/W8kNx1SXQXDh2MiXYLjB3DxHGgKMWC+xuD2LMlyBlxVpIxqiAkcBvSDPnBHC+Aw2L58FW8zmiFAWDTdqdPzNxgH1AFUDj9Pw7ALIuHAB8DGUMR9tt6PC4EWO+GCkrngoIIZAO5nSi/qH7YNtXHbnzXAmjc5O3lv1NKAKOTMtdr0jyn8IF8B0EKzr4cjBfilRfJBiFpmQuJxqWPgDrf/fCoCgYGsmT79LoonR9yr/LepytqhHQMCV3m16RrxSyNogQj4Qj7RY4PF7EXpaFlKWPg+gNQadlbjcOr1gAy54yGBUZQ0xxmte8mgKn2/Of1G0V04QioH5qTrVBVkZHCsAfCUdOW+DwcghjkLJ0dUAIPucfXQRLZQmMsozBpjjIUshyRchMh8ddnfZhZYYQgIO/zqmL0ila3+QENIRHwuF2K/SjszB08cqgAI6segjOPSUYYoqFLElCzokI2dyeumHbKnochap4/3dFdl2sQddrAHx70CWZ0N2zCESnD7kE3OseA9FY+YWCYHW56oZ/tEcMwFeTs+pMRkOvAVAtkoJZzIue51eDfqqp6AnK4LTTUTdi+14xAPsnZ1b0MxqzQ1EVuS9l5UG+/UFAUXqI892eX6obYy9DOGV3lJs/2ZsntAd8Nn70xiRTzG9EHAwmI43Jhzx3vrrzTicaHp4P6vYg9ZEn1fMESuF9cS2oeh2jybxGi/29y3ZWzxQCUDp21JpfJMTP06ThB8JS9thO52W555Pnzi/rPOf51ZknrAkM4aW1oCWqxZywiYda25/IK93XozukugnuzDXfkJoQ/6peDm8XlrLHQZ77QEDn65feD9vnVb6jjl/8iPSlzY+sUa8deCS89BRoySfCDncXdHq9aGg9PWdCRW2PJqkqgF255jEDYqIrE4zBkxY1a6Sc8ZBvu1/VeV7YNHDn91XDIPMkJxaEEPjzBF/a/MjaIBCeBi35WDOEVocTTRZH5qTKL6qElsDejIxoGu1pGxIfp9OijeSOh3JrMOd5bv9Zl/PfJTndM0YfhOVrIEWrfGLAI+HlZ0B379BiFg6ftrrsclv8xOJ6hxAALlScN3LnhfGm8YroMtAboDz+Akj/np8I8Hq+fsk82Gu/8OX2Q+J4kvP94OuEYIWD1w7po5DKI0EFAjvRAs/8W4VbYh5KceBUW9HEitpJatQC5pnFueYl/aOMy/tFq5eyqo+g/wUgC1ZCSUw+c9trs6Fh8b2wf7k/ZGHjZbyp0llARQ2/CKkrn/1eU8Vz4jjoqgUgzeKtihMdDpy02xcWlNeu0gSgKNc8TJbI1xcmxBORBgQD0GS1wRHfF6mrn4c+KRndnRctbHpAePQZX3vNfbwZhx68A4aTx5EcxztCoS8eVd+0tTNCMGxcyRcHNQHgwkXZ5rLEuKjcPgJlrB9Au9MF3YBEpDz0GI49/yTsX9Zoruo6IVjQ4fHCOOwiDL5nARpWLIS76Rji9HphAKccDhy3d5QUlNWMC4QrKMidOemziSRtSOtjgkJCH4kcQqPVBovT1dnPZyzsZgZ/et9arL7Okn8uLc7ztV/f1g4P2PUTy2rUu7Ch3g6/dd118oCjtXXxBv3w5FixD798kWCxod3lCruH539a3SFocZ6P5w+i3ek60DI4fcSst9/2hhUBfBBPihjwKgdgMgSv5PxKOIRWuwMJUYaImxkcQluHE32ijULrntvAI/CY1cblZ08or3kj2G4Rci/hn8HtyjUXSYRMSEkwQdeLNXrobUy7hItnfact8DK2u6C8ZgJfiBEB6IyCUaMYo5/qFdkwtBe7NNrdCz7CSykOt1vg8lCHxJAxvrIm5KcyISPAr7I4J/1OEPJsxO3p3va6a77OTnRnDsEYuW1ixf4XRFQJA/Blh7np/wLILH6m+/p1Gl9QiBgUjkx35wG8UVBeM1t0Hk0Aasxm/XET2QqwyXpZxiBTLPQ/8p7A1zw/Ll1e/jE5LWaGjqlqOX/Yp8APB27PyIjX6e07ACmTZ4iJsdEw6cVOB9GnIipndbl9xx2PAAB73C7jlVdUVQl9HebXoSkC/IO2XXxxjCHG+w6AKfy3OIMeF0RHQTlH0eBhFMdtHfyc95lEGD42MOe1OZUH2kXhRQSAD/Yth3g87X+FzveDvlFG8B6CSO2g1VAu78sJnE6ctDv8T52f9c/FuIzzMquq3OHMGVYEdFe0Myd9FmN4ERJJ4L/zMrePwYB4o6HXIoKntW1OF1o7vnOcMdbKJHLLpLKad8NxPOII6K60LNfc1wWsYsAtxP/pAgGiZQWxBh2idTpfE0TLxdtYvA6wuly+1+3+dIa/6ibABh2R788v29fjdbcWHb7lo3VAMHneSvOCLQbI9DMgugbwJcKbIXqZQJFkKIScWSo8tD38j3p5EgPuPK8Iu1++d/zAJkbwaEFZzae9ZXevAvAbVZT3q5GESfxzj+sBJEVobBMI3qCE/X1SaW1NhHP1GH5WAJwBUVCgEHdLLmPS5YR5JwDSKAD9gjpBcAKM7ieMFDMZn7QMNJcFq+YiBXJWAagZt2PMiH46WRrq5Z/ck87/G5RBLGCsVQfSkFdecypSp7SMP+cAtBh3LmTPewD/B5i6wX2BCv10AAAAAElFTkSuQmCC'
+copy2clipboardImgData = b'iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAjBJREFUSEvtl01oE2EQht/Z3USNVBFEza34V+hBhPRHsR704G5uQqHNlmovBcFDPQTEqyB4KgqCICKI0SQUA4KHTVKVgAdJukHwIN4FBfEYIT+730gCgU1M2l22MZfs8WO+ed55v2GGJQzpoyFx0QGeeHZh7GBo7A2BgpBcSBKYBHCjqBuvXUR3hHSAIwk1rCi0XtSzS24SzaS0CggWMa16hXeCM2pYqXsAp6PfBEOXCY+YxeOSnku6EdyM8QnWTCGwLkt0CsAdG5g3Y4bhBu4LPLWhTZCNVQD7iIgJ1ttibDM/cLATcObFlf17A3QLEgVa50QfSwvGh34ifFXsTBrJqGG5DgOQNhhiTgJdFHbj8tbyexMAdwvYVXC7MWeT0ThLmANwVsC+acby/7z7QMDTKW2NiI9YsF8pCGSEZcfN5XzWWflAwJHn0RPKHi6CUAPoEDNXba6eLi8VfrctHwi4mfx8Qj1pBTHe6jOBWuhY7VPhUsEaONjZTNNp7X6tLh58uZ7/9V/BsyktaQU5Xp7P/RyBWw40h4CXJdE9QPrdHVntey3untUJNSwr9LCkZxfdrDZnzLmUNi6I7pZixkr33Z3f+EkkJB84/BRCOtrcr84EgsRxYvpOoEYvUUwiwBLf21rMvfMM3q7KXqrdurJjxSOw04GZdPRlg63bn/XNH24tbse1rLY4Xr7WZ1Zvl3AqrcUkxhoR/ngFM4MqcvXq14VCpeeS8JrQT/zQ/p3+AviYoS4NqkdZAAAAAElFTkSuQmCC'
+
 
 class historyLogger():
     def createDB(self):
@@ -457,7 +460,7 @@ class SetupGUI():
                 if(isHistoryCleared):
                     layout = [
                         [sg.Image(data=tickImgData, size=(350,100))],
-                        [sg.Text("Operation Successful", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#27e800" if (sgThemeGlobal == "Dark") else "#22cc00")],
+                        [sg.Text("Operation Successful", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#27e800" if (sgThemeGlobal == "Dark") else "#1fbd00")],
                     ]
                     sg.Window("Prompt", layout, size=(350, 175), finalize=True)
                     # Continue back to the top from here
@@ -471,7 +474,7 @@ class SetupGUI():
                 sg.Window("Prompt", layout, size=(350, 175), finalize=True)
 
                 
-            # Clear Feilds events Options    
+            # Clear Feilds events options
             elif("_clear_" in event or "r:82" in event):
                 window.FindElement('_asciiTextBox_').Update('')
                 window.FindElement('_binTextBox_').Update('')
@@ -671,16 +674,31 @@ class SetupGUI():
                     ]
                     sg.Window("Error", layout, size=(350, 175), finalize=True)
 
+
+            # Copy text event options
+            elif("TextBoxCopy" in event):
+                if("_asciiTextBoxCopy_" == event): self.copy2clipboard(values["_asciiTextBox_"], "Ascii", sgThemeGlobal)
+                if("_binTextBoxCopy_" == event): self.copy2clipboard(values["_binTextBox_"], "Binary", sgThemeGlobal)
+                if("_hexTextBoxCopy_" == event): self.copy2clipboard(values["_hexTextBox_"], "Hex", sgThemeGlobal)
+                if("_base64TextBoxCopy_" == event): self.copy2clipboard(values["_base64TextBox_"], "Base64", sgThemeGlobal)
+                if("_decimalTextBoxCopy_" == event): self.copy2clipboard(values["_decimalTextBox_"], "Decimal", sgThemeGlobal)
+                if("_rot13TextBoxCopy_" == event): self.copy2clipboard(values["_rot13TextBox_"], "Rot13", sgThemeGlobal)
+                if("_rot47TextBoxCopy_" == event): self.copy2clipboard(values["_rot47TextBox_"], "Rot47", sgThemeGlobal)
+                if("_urlEncodedTextBoxCopy_" == event): self.copy2clipboard(values["_urlEncodedTextBox_"], "URL Encoded", sgThemeGlobal)
+                if("_htmlEntitiesTextBoxCopy_" == event): self.copy2clipboard(values["_htmlEntitiesTextBox_"], "HTML Entity", sgThemeGlobal)
+
+
         window.close()
         conn.close()
         
         historyLogger().removeTempFolder(tempFolderPath)
 
     
-    def windowSetup(self, theme="Dark"):       
+    def windowSetup(self, theme="Dark"):
         # Set provided theme
         sgThemeGlobal = theme
         sg.theme(theme)
+        transparent = sg.LOOK_AND_FEEL_TABLE[theme]['BACKGROUND']
 
         # Fonts & Colors 
         fontHeading = ("Terminal", 15)
@@ -734,13 +752,13 @@ class SetupGUI():
         layout = [  
             [sg.Menu(menu_stc)],
 
-            [sg.Text('Ascii', size=(40, 1), justification="center", font=fontHeading), sg.Text('Binary', size=(40, 1), justification="center", font=fontHeading), sg.Text('Hexadecimal', size=(40, 1), justification="center", font=fontHeading)],    
+            [sg.Text('', size=(18, 1)), sg.Text('Ascii', size=(5, 1), justification="center", font=fontHeading), sg.Button('', key='_asciiTextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent)), sg.Text('', size=(38, 1)), sg.Text('Binary', size=(6, 1), justification="center", font=fontHeading), sg.Button('', key='_binTextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent)), sg.Text('', size=(35, 1)),sg.Text('Hexadecimal', size=(11, 1), justification="center", font=fontHeading), sg.Button('', key='_hexTextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent))],    
             [sg.Multiline(size=(35, 7), key='_asciiTextBox_', font=fontTextBox, text_color=fontColors["lightColor5"] if(sgThemeGlobal == "Dark") else fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_binTextBox_', font=fontTextBox, text_color=fontColors["lightColor1"] if(sgThemeGlobal == "Dark") else fontColors["darkColor1"]), sg.Multiline(size=(35, 7), key='_hexTextBox_', font=fontTextBox, text_color=fontColors["lightColor2"] if(sgThemeGlobal == "Dark") else fontColors["darkColor2"])],
             
-            [sg.Text('Base64', size=(40, 1), justification="center", font=fontHeading), sg.Text('Decimal', size=(40, 1), justification="center", font=fontHeading), sg.Text('Rot13', size=(40, 1), justification="center", font=fontHeading)],    
+            [sg.Text('', size=(18, 1)), sg.Text('Base64', size=(6, 1), justification="center", font=fontHeading), sg.Button('', key='_base64TextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent)), sg.Text("", size=(34, 1)), sg.Text('Decimal', size=(8, 1), justification="center", font=fontHeading), sg.Button('', key='_decimalTextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent)), sg.Text("", size=(36,1)), sg.Text('Rot13', size=(5, 1), justification="center", font=fontHeading), sg.Button('', key='_rot13TextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent))],    
             [sg.Multiline(size=(35, 7), key='_base64TextBox_', font=fontTextBox, text_color=fontColors["lightColor2"] if(sgThemeGlobal == "Dark") else fontColors["darkColor2"]), sg.Multiline(size=(35, 7), key='_decimalTextBox_', font=fontTextBox, text_color=fontColors["lightColor5"] if(sgThemeGlobal == "Dark") else fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_rot13TextBox_', font=fontTextBox, text_color=fontColors["lightColor3"] if(sgThemeGlobal == "Dark") else fontColors["darkColor3"])],
             
-            [sg.Text('Rot47', size=(40, 1), justification="center", font=fontHeading), sg.Text('URL Encoded', size=(40, 1), justification="center", font=fontHeading), sg.Text('HTML Entities', size=(40, 1), justification="center", font=fontHeading)],    
+            [sg.Text('', size=(18,1)), sg.Text('Rot47', size=(5, 1), justification="center", font=fontHeading), sg.Button('', key='_rot47TextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent)), sg.Text("", size=(33, 1)), sg.Text('URL Encoded', size=(11, 1), justification="center", font=fontHeading), sg.Button('', key='_urlEncodedTextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent)), sg.Text("", size=(28,1)), sg.Text('HTML Entities', size=(13, 1), justification="center", font=fontHeading), sg.Button('', key='_htmlEntitiesTextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent))],    
             [sg.Multiline(size=(35, 7), key='_rot47TextBox_', font=fontTextBox, text_color=fontColors["lightColor5"] if(sgThemeGlobal == "Dark") else fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_urlEncodedTextBox_', font=fontTextBox, text_color=fontColors["lightColor3"] if(sgThemeGlobal == "Dark") else fontColors["darkColor3"]), sg.Multiline(size=(35, 7), key='_htmlEntitiesTextBox_', font=fontTextBox, text_color=fontColors["lightColor1"] if(sgThemeGlobal == "Dark") else fontColors["darkColor1"])],
             
             [sg.Button('GO [Ctrl+G]', size=(25, 1), key='_go_'), sg.Button('Reset Feilds [Ctrl+R]', size=(25, 1), key="_clear_")] 
@@ -748,6 +766,31 @@ class SetupGUI():
             
         return sg.Window("Mini Text Toolkit (MTT)", layout, finalize=True, return_keyboard_events=True)
 
+
+    def copy2clipboard(self, value2copy, fromType, sgThemeGlobal):
+        try:
+            pyperclip.copy(value2copy)
+            layout = [
+                [sg.Image(data=tickImgData, size=(415,100))],
+                [sg.Text("{} value copied successfully.".format(fromType), size=(175, 1), justification="center", font=("Arial", 14, "bold"), text_color="#27e800" if (sgThemeGlobal == "Dark") else "#1fbd00")],
+                [sg.Text("Prompt closing in 5", key="_copy2clipboardcounter_", size=(175, 1), justification="center", font=("Arial", 13, "bold"), text_color="#ccc" if (sgThemeGlobal == "Dark") else "#333")],
+            ]
+        except:
+            layout = [
+                [sg.Image(data=errorImgData, size=(415,100))],
+                [sg.Text("{} value failed to copy.".format(fromType), size=(175, 1), justification="center", font=("Arial", 14, "bold"), text_color="#ff4265")],
+                [sg.Text("Prompt closing in 5", key="_copy2clipboardcounter_", size=(175, 1), justification="center", font=("Arial", 13, "bold"), text_color="#ccc")],
+            ]
+
+        copyResultsWindow = sg.Window("Prompt", layout, size=(415, 200), finalize=True)
+        start = round(time.time() % 60)
+        while 1:
+            diff = round(time.time() % 60) - start
+            e, v = copyResultsWindow.read(timeout=10)
+            if(diff >= 5 or e == None): break
+            copyResultsWindow['_copy2clipboardcounter_'].update("Prompt closing in {}".format(5-diff))
+            
+        copyResultsWindow.close()
 
 
 if (__name__ == "__main__"):
