@@ -35,7 +35,7 @@
 
 ## Bugs
 
-* If you found any bug please submit an issue to the MTT github repo or feel free to contact me shafdo@protonmail.com.
+* If you found any bug please submit an issue to the MTT GitHub repo or feel free to contact me shafdo@protonmail.com.
 
 ## Final Note
 
