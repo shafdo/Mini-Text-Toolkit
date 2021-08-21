@@ -29,13 +29,15 @@
 ## Usage
 
 * Its that simple 🤗
-`python3 mtt.py`
+    * `python3 mtt.py`
+
+* Make sure after each time you enter a new value to convert. You got to reset all the fields either by pressing the "Reset Fields" button or CTRL+R (Shortcut).
 
 ## Preview
 
 * Here is a screenshot of MTT primary interface.
 
-![ScreenShot 1](https://i.imgur.com/E5E4gx2.png)
+![ScreenShot 1](https://i.imgur.com/CMEzkOk.png)
 
 ## Contributions
 

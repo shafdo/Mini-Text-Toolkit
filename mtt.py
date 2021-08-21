@@ -904,7 +904,7 @@ class SetupGUI():
                 "Options", 
                 [
                     "GO [Ctrl+G]::_go_",
-                    "Reset Feilds [Ctrl+R]::_clear_",
+                    "Reset Fields [Ctrl+R]::_clear_",
                     "Theme", 
                     ["Light::_light_", "Dark::_dark_"],
                     "Exit [Ctrl+E]::_exit_",
@@ -939,7 +939,7 @@ class SetupGUI():
             [sg.Text('', size=(18,1)), sg.Text('Rot47', size=(5, 1), justification="center", font=fontHeading), sg.Button('', key='_rot47TextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent)), sg.Text("", size=(33, 1)), sg.Text('URL Encoded', size=(11, 1), justification="center", font=fontHeading), sg.Button('', key='_urlEncodedTextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent)), sg.Text("", size=(28,1)), sg.Text('HTML Entities', size=(13, 1), justification="center", font=fontHeading), sg.Button('', key='_htmlEntitiesTextBoxCopy_', image_data=copy2clipboardImgData, border_width=0, button_color=(transparent,transparent))],    
             [sg.Multiline(size=(35, 7), key='_rot47TextBox_', font=fontTextBox, text_color=fontColors["lightColor5"] if(sgThemeGlobal == "Dark") else fontColors["darkColor5"]), sg.Multiline(size=(35, 7), key='_urlEncodedTextBox_', font=fontTextBox, text_color=fontColors["lightColor3"] if(sgThemeGlobal == "Dark") else fontColors["darkColor3"]), sg.Multiline(size=(35, 7), key='_htmlEntitiesTextBox_', font=fontTextBox, text_color=fontColors["lightColor1"] if(sgThemeGlobal == "Dark") else fontColors["darkColor1"])],
             
-            [sg.Button('GO [Ctrl+G]', size=(25, 1), key='_go_'), sg.Button('Reset Feilds [Ctrl+R]', size=(25, 1), key="_clear_")] 
+            [sg.Button('GO [Ctrl+G]', size=(25, 1), key='_go_'), sg.Button('Reset Fields [Ctrl+R]', size=(25, 1), key="_clear_")] 
         ]
             
         return sg.Window("Mini Text Toolkit (MTT)", layout, finalize=True, return_keyboard_events=True)
