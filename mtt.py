@@ -323,12 +323,51 @@ class Convertor():
 
     def fromdec(self, convertMethod, convertValue):
         if(convertMethod == "decimal2ascii"):
-            convertValue = self.paddingFixer(convertValue, 2)
-            asciiVal = "".join([chr(int(num)) for num in [convertValue[i:i+2] for i in range(0, len(convertValue), 2)]])
-            return asciiVal
+            if(" " in convertValue):
+                valContainer = convertValue.split(" ")
+                return "".join(chr(int(val)) for val in valContainer)
+            
+            else:
+                convertValue = self.paddingFixer(convertValue, 2)
+                return "".join([chr(int(num)) for num in [convertValue[i:i+2] for i in range(0, len(convertValue), 2)]])
 
         if(convertMethod == "decimal2bin"):
-            pass
+            if(" " in convertValue):
+                valContainer = convertValue.split(" ")
+                return " ".join(format(int(val), "08b") for val in valContainer)
+
+            else:
+                return bin(int(convertValue))[2:]
+
+        if(convertMethod == "decimal2hex"):
+            if(" " in convertValue):
+                container = convertValue.split(" ")
+                return " ".join(hex(int(val))[2:] for val in container)
+
+            else:
+                return hex(int(convertValue))[2:]
+
+        if(convertMethod == "decimal2base64"):
+            asciiVal = self.fromdec("decimal2ascii", convertValue)
+            return base64.b64encode(asciiVal.encode()).decode("utf-8", "ignore")
+        
+        if(convertMethod == "decimal2rot13"):
+            asciiVal = self.fromdec("decimal2ascii", convertValue)
+            return self.fromAscii("ascii2rot13", asciiVal)
+        
+        if(convertMethod == "decimal2rot47"):
+            asciiVal = self.fromdec("decimal2ascii", convertValue)
+            return self.fromAscii("ascii2rot47", asciiVal)
+
+        if(convertMethod == "decimal2urlencoded"):
+            asciiVal = self.fromdec("decimal2ascii", convertValue)
+            return self.fromAscii("ascii2urlencode", asciiVal)
+
+        if(convertMethod == "decimal2htmlentities"):
+            asciiVal = self.fromdec("decimal2ascii", convertValue)
+            return self.fromAscii("ascii2htmlentities", asciiVal)
+
+
 
 
     def valueErrorMsg(self, convertMethod):
@@ -582,7 +621,7 @@ class SetupGUI():
 
                 # Decimal => X
                 elif(len(values["_decimalTextBox_"]) > 1): 
-                    val = values["_decimalTextBox_"].strip("\n").replace(" ", "")
+                    val = values["_decimalTextBox_"].strip("\n")
                     historyLogger().log(conn, "decimal", val)
 
                     try:
@@ -590,7 +629,25 @@ class SetupGUI():
                         window.FindElement("_asciiTextBox_").Update(convertor.fromdec("decimal2ascii", val))
 
                         # Decimal => Binary
-                        window.FindElement("_binTextBox_").Update(convertor.fromdec("decimal2bin", val))    # Start Here
+                        window.FindElement("_binTextBox_").Update(convertor.fromdec("decimal2bin", val))
+
+                        # Decimal => Hex
+                        window.FindElement("_hexTextBox_").Update(convertor.fromdec("decimal2hex", val))
+                        
+                        # Decimal => Base64
+                        window.FindElement("_base64TextBox_").Update(convertor.fromdec("decimal2base64", val))
+                        
+                        # Decimal => Rot13
+                        window.FindElement("_rot13TextBox_").Update(convertor.fromdec("decimal2rot13", val))
+                       
+                        # Decimal => Rot47
+                        window.FindElement("_rot47TextBox_").Update(convertor.fromdec("decimal2rot47", val))
+                        
+                        # Decimal => UrlEncoded
+                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromdec("decimal2urlencoded", val))
+                        
+                        # Decimal => HTMLEntities
+                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromdec("decimal2htmlentities", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("decimal")
