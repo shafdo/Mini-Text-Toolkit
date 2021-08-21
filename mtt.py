@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from itertools import count
-from urllib.parse import quote, quote_from_bytes
+from urllib.parse import quote, unquote
 import os, shutil, base64, codecs, html, binascii, sqlite3, tempfile, webbrowser, pyperclip, time
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -16,6 +16,7 @@ except(ModuleNotFoundError):
 currentDir = os.path.dirname(__file__)
 sgThemeGlobal = ""
 platform = "windows" if(os.name) else "linux"
+version = "1.0"
 
 # Icons
 aboutImgData = b'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFP0lEQVR4nO2Y7U9TVxzHGXvp9hcse7f1uaVPSQtuMxmSZWuoXUYMwqI4tbzwxabR1czE4KagYWlLl2I7kLbJeNgLN6ZbdFBELSAlS5SRLBKzFyzbMhITH0qviobffqeu19729nIv9CHc3W/yDYHb8zu/7+dezj09FRWSJEmSJEmSJEmSiiOz2bzFZDL1G43GOfTvPD1HxhgMhrfK3f+6hEFOYxBYj0mNcudYk7D5vesNn+E95c4jVC9g0wssd/MH/HkE7crjI/iZYRYAC6RmuUPxFv7vvsYSPsJ3PH4+nD2e1CxmzwUVNmxhuYsNAsY3sACoLmbPBRXebWt2AHwb2PmOx7D1LONritlzQSUKAAAVlY8m7bbkhL19KeZwC/Gt720DoRO1kOkb39qG+Y6/MfTucPb4376zDQntI9X7VbtNcPjERP2HVLw58fCXfSAGU9PNicSUvZlXeGpqWxM189FKuZsuOATMlLj23o7VAVxvus8YPNOC3rVB3ZL9JNzjDP94qn77s9C7gbr2DiRHTbA0atjQTkbNqSwkUwpCrH47x+P/wRihlrxcXfbGCw4CM5Fs1FRDND8AXPiSV98ue7NFg3ClNrUgsoZ/MG1XUTM7y95ksU0yJsZtmhwAySlHX3JyW9kbLPpTgBmpSUdvDoCH041/Jq9sKXuDRQeAGSnMyggPP9dtouK7VpZGjbwL3R8xw4+Rw9B/9jRMDu4ueZDY4B74pvcUXIgcggdC3lZRE1DxlhWYsL9MAzi23+I62lp958BO7Xw+H26pmh84rr6TdtDtWg6Hw5ByKAR97fZE+lrvUc0iV621uPczzWK6fl+7I0HPjf7a/elyZm+HWrS3uWqRrMf2V7toAHK5/JRMJgMuW0wyuPjl67R7zrghs4mw72P62qhHzllrLR7Bmun64a5PGHP3BNyM3qym1efHzB00AK1Wu1U4AA+jiZDvQOkA+A4y5u4NeAUDwMy1mcvAi2q1+qlOp4N83mzVwe0hDe2g73Po7u6mPfiVk742EdDkrbNWx848n3vQ38qYm/SS2dtmC3ctlUr1lGRmLIRI5G+ug8k3apgLpL/DCW1tbbTP+x30tZk+Q6EOQ2nHzz6f+7z/fcbc/o5WRm9v1nDXwqx/5bwG8Y+z6wFwobuUABzrBXAzB4BGo4kKARDqbGI0Md6ztWQALvfUMeYOde4QCmCEDcCQEACxgB48Xzih/bgLgu2NMD+gKRmAW/1qCJxshJM4t/eEE9cHvSAAmHUgBwAugl1CANwMqxgr7x/ndCUDsHBOy5h7NqLiDcBoNAJmdecAwJXRSS7yBXD3oh6mg0oY88rg14iaca3YAIhn8QaQueNBBdy9xP8JMBgMBMDeHABVVVV6NG8AXC4FAC5zAdDr9cRVOQBQlfiOXBY7AMz4mGRlA8C5FxALANY9QAaAvHsBEQHI3QOkxbUXEBGA3D1ABoBBsQMgGbkAeMUMgLzmMaMnLwDcC+zLtxcQCwDWPUBaXHsBMQAg2fLtAdKqxEWCdS8gBgCce4CMdWBRrADw5v7DGf6/dYB1MyQGACQbHwBzaNEBIJmUSuUcHwBecmiIH059cUi/FTYiANI7yUCykEysX4NZALykUCgeZRwfA/4OVrMCxn1yXh7rUqTGFNLRLiXv+avNytQY0ns6B8mEi+CmVQEQ4UJYh4OecB2Lc7nYx+KrOftYHEE8IUf/vMKnhY/Lq/g0jCC5e1hg2WKQL0c9MuDjnzoVK2RMIU1q8p3fan42hvSOGS7h+/8VQeElSZIkSZIkSZL+D/oXjKMfxw94DhgAAAAASUVORK5CYII='
@@ -28,7 +29,7 @@ copy2clipboardImgData = b'iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0
 class historyLogger():
     def createDB(self):
         conn = sqlite3.connect('.mtt-history.db')
-        # if(platform == "windows"): os.system("attrib +h .mtt-history.db")
+        if(platform == "windows"): os.system("attrib +h .mtt-history.db")
         cursor = conn.cursor()
         try:
             cursor.execute('CREATE TABLE history ( id INTEGER PRIMARY KEY AUTOINCREMENT, today DATE, time INTEGER, convertFrom TEXT, convertValue TEXT )')
@@ -86,10 +87,9 @@ class historyLogger():
 
     def webTempFile(self, tempFolderPath, html):
         tempFile = os.path.join(tempFolderPath, "{}.html".format(next(tempfile._get_candidate_names())))
-        print(tempFile)
 
         # Write default HTML stuff
-        defaultDocumentHTML = r'<!DOCTYPE html><html lang="en"> <head> <meta charset="UTF-8"/> <meta http-equiv="X-UA-Compatible" content="IE=edge"/> <meta name="viewport" content="width=device-width,initial-scale=1"/> <title>MTT History</title> <style>::-webkit-scrollbar{width:10px;height:8px;}::-webkit-scrollbar-track{background:#585858}::-webkit-scrollbar-thumb{background:#53e623;border-radius:50px;}::-webkit-scrollbar-thumb:hover{background:#41b11d}body{background-color:#222}.row{margin-bottom:50px}.para-wrapper{margin-left:25px;padding-left:15px;border-left:4px solid #ff007b}.divider{border:none;border-bottom:4px solid #ff007b}.green{color:#53e623}h2{color:#37b2ca}.text-white{color:#c1c1c1}p{overflow-x: auto;font-size:18px;color:#c1c1c1;font-family:Ubuntu,sans-serif;line-height:30px}.pl-4{padding-left:10px}#content{margin:25px}#header-wrapper>h1{padding-left: 20px;color:#ffe000;font-family:Ubuntu,sans-serif}#export2csv{background-color:#4aca37;border-radius:50px;height:40px;color:#fff;font-weight:700;padding:0 20px;margin:20px;font-size:16px;border:3px solid #4aca37;cursor:pointer;transition:.5s;}#export2csv:hover{border:3px solid #fff;background-color:transparent;}</style> </head> <body> <div id="header-wrapper" style="display: flex; justify-content: space-between;"> <h1>MTT Histroy</h1> <button id="export2csv">Export to CSV</button> </div><ul class="text-white"> <li><p class="pl-4">Thank you for trying out MTT :).</p></li></ul> <div id="content"></div><script>document.querySelector("#export2csv").addEventListener("click",e=>{e.stopPropagation();const t=[["Time","Convert From","Value"]];document.querySelectorAll("p").forEach(e=>{let a=[];e.childNodes.forEach(e=>{switch(e.className){case"time-value":case"convert-from-value":case"convert-value":a.push(e.innerText)}}),0!=a.length&&t.push(a)});let a=t.map(function(e){return e.join()}).join("\n");a="data:text/csv;charset=utf-8,"+escape(a);var c=document.createElement("a");c.href=a,c.download="mttHistory.csv",c.click()});</script></body></html>'
+        defaultDocumentHTML = r'<!DOCTYPE html><html lang="en"> <head> <meta charset="UTF-8"/> <meta http-equiv="X-UA-Compatible" content="IE=edge"/> <meta name="viewport" content="width=device-width,initial-scale=1"/> <title>MTT History</title> <style>::-webkit-scrollbar{width:10px;height:8px;}::-webkit-scrollbar-track{background:#585858}::-webkit-scrollbar-thumb{background:#53e623;border-radius:50px;}::-webkit-scrollbar-thumb:hover{background:#41b11d}body{background-color:#222}.row{margin-bottom:50px}.para-wrapper{margin-left:25px;padding-left:15px;border-left:4px solid #ff007b}.divider{border:none;border-bottom:4px solid #ff007b}.green{color:#53e623}h2{color:#37b2ca}.text-white{color:#c1c1c1}p{overflow-x: auto;font-size:18px;color:#c1c1c1;font-family:Ubuntu,sans-serif;line-height:30px}.convert-from-value{text-transform: capitalize;}.pl-4{padding-left:10px}#content{margin:25px}#header-wrapper>h1{padding-left: 20px;color:#ffe000;font-family:Ubuntu,sans-serif}#export2csv{background-color:#4aca37;border-radius:50px;height:40px;color:#fff;font-weight:700;padding:0 20px;margin:20px;font-size:16px;border:3px solid #4aca37;cursor:pointer;transition:.5s;}#export2csv:hover{border:3px solid #fff;background-color:transparent;}</style> </head> <body> <div id="header-wrapper" style="display: flex; justify-content: space-between;"> <h1>MTT Histroy</h1> <button id="export2csv">Export to CSV</button> </div><ul class="text-white"> <li><p class="pl-4">Thank you for trying out MTT :).</p></li></ul> <div id="content"></div><script>document.querySelector("#export2csv").addEventListener("click",e=>{e.stopPropagation();const t=[["Time","Convert From","Value"]];document.querySelectorAll("p").forEach(e=>{let a=[];e.childNodes.forEach(e=>{switch(e.className){case"time-value":case"convert-from-value":case"convert-value":a.push(e.innerText)}}),0!=a.length&&t.push(a)});let a=t.map(function(e){return e.join()}).join("\n");a="data:text/csv;charset=utf-8,"+escape(a);var c=document.createElement("a");c.href=a,c.download="mttHistory.csv",c.click()});</script></body></html>'
         soup = BeautifulSoup(defaultDocumentHTML, "html.parser")
         soup.find("div", {"id": "content"}).append(BeautifulSoup(html, 'html.parser'))
 
@@ -367,11 +367,90 @@ class Convertor():
             return self.fromAscii("ascii2htmlentities", asciiVal)
 
 
-    def fromrot13(self, convertMethod, ConvertValue):
-        if(convertMethod == "rot132ascii"):
-            pass
+    def fromrot13(self, convertMethod, convertValue):
+        if(convertMethod == "rot132ascii"):return codecs.decode(convertValue, "rot_13")
+        if(convertMethod == "rot132bin"):return self.fromAscii("ascii2bin", convertValue)
+        if(convertMethod == "rot132hex"):return self.fromAscii("ascii2hex", convertValue)
+        if(convertMethod == "rot132base64"):return self.fromAscii("ascii2base64", convertValue)
+        if(convertMethod == "rot132decimal"):return self.fromAscii("ascii2dec", convertValue)
+        if(convertMethod == "rot132rot47"):return self.fromAscii("ascii2rot47", convertValue)
+        if(convertMethod == "rot132urlencoded"):return self.fromAscii("ascii2urlencode", convertValue)
+        if(convertMethod == "rot132htmlentities"):return self.fromAscii("ascii2htmlentities", convertValue)
 
+        
+    def fromrot47(self, convertMethod, convertValue):
+        if(convertMethod == "rot472ascii"): return self.fromAscii("ascii2rot47", convertValue)
+        if(convertMethod == "rot472bin"): return self.fromAscii("ascii2bin", convertValue)
+        if(convertMethod == "rot472hex"): return self.fromAscii("ascii2hex", convertValue)
+        if(convertMethod == "rot472base64"): return self.fromAscii("ascii2base64", convertValue)
+        if(convertMethod == "rot472decimal"): return self.fromAscii("ascii2dec", convertValue)
+        if(convertMethod == "rot472rot13"): return self.fromAscii("ascii2rot13", convertValue)
+        if(convertMethod == "rot472urlencoded"): return self.fromAscii("ascii2urlencode", convertValue)
+        if(convertMethod == "rot472htmlentities"): return self.fromAscii("ascii2htmlentities", convertValue)
+    
+    
+    def fromurlencoded(self, convertMethod, convertValue):
+        if(convertMethod == "urlencoded2ascii"): return unquote(convertValue, 'utf-8')
+        if(convertMethod == "urlencoded2bin"): 
+            urldecoded = self.fromurlencoded("urlencoded2ascii", convertValue)
+            return self.fromAscii("ascii2bin", urldecoded)
 
+        if(convertMethod == "urlencoded2hex"): 
+            urldecoded = self.fromurlencoded("urlencoded2ascii", convertValue)
+            return self.fromAscii("ascii2hex", urldecoded)
+
+        if(convertMethod == "urlencoded2base64"): 
+            urldecoded = self.fromurlencoded("urlencoded2ascii", convertValue)
+            return self.fromAscii("ascii2base64", urldecoded)
+
+        if(convertMethod == "urlencoded2decimal"): 
+            urldecoded = self.fromurlencoded("urlencoded2ascii", convertValue)
+            return self.fromAscii("ascii2dec", urldecoded)
+
+        if(convertMethod == "urlencoded2rot13"): 
+            urldecoded = self.fromurlencoded("urlencoded2ascii", convertValue)
+            return self.fromAscii("ascii2rot13", urldecoded)
+
+        if(convertMethod == "urlencoded2rot47"): 
+            urldecoded = self.fromurlencoded("urlencoded2ascii", convertValue)
+            return self.fromAscii("ascii2rot47", urldecoded)
+
+        if(convertMethod == "urlencoded2htmlentities"): 
+            urldecoded = self.fromurlencoded("urlencoded2ascii", convertValue)
+            return self.fromAscii("ascii2htmlentities", urldecoded)
+
+        
+    def fromhtmlentities(self, convertMethod, convertValue):
+        if(convertMethod == "htmlentities2ascii"): return html.unescape(convertValue)
+        if(convertMethod == "htmlentities2bin"): 
+            htmldecoded = self.fromhtmlentities("htmlentities2ascii", convertValue)
+            return self.fromAscii("ascii2bin", htmldecoded)
+
+        if(convertMethod == "htmlentities2hex"): 
+            htmldecoded = self.fromhtmlentities("htmlentities2ascii", convertValue)
+            return self.fromAscii("ascii2hex", htmldecoded)
+
+        if(convertMethod == "htmlentities2base64"): 
+            htmldecoded = self.fromhtmlentities("htmlentities2ascii", convertValue)
+            return self.fromAscii("ascii2base64", htmldecoded)
+
+        if(convertMethod == "htmlentities2decimal"): 
+            htmldecoded = self.fromhtmlentities("htmlentities2ascii", convertValue)
+            return self.fromAscii("ascii2dec", htmldecoded)
+
+        if(convertMethod == "htmlentities2rot13"): 
+            htmldecoded = self.fromhtmlentities("htmlentities2ascii", convertValue)
+            return self.fromAscii("ascii2rot13", htmldecoded)
+
+        if(convertMethod == "htmlentities2rot47"): 
+            htmldecoded = self.fromhtmlentities("htmlentities2ascii", convertValue)
+            return self.fromAscii("ascii2rot47", htmldecoded)
+
+        if(convertMethod == "htmlentities2urlencoded"): 
+            htmldecoded = self.fromhtmlentities("htmlentities2ascii", convertValue)
+            return self.fromAscii("ascii2urlencode", htmldecoded)
+
+        
     def valueErrorMsg(self, convertMethod):
         layout = [
             [sg.Image(data=errorImgData, size=(350,75))],
@@ -418,7 +497,7 @@ class SetupGUI():
                     layout = [
                         [sg.Image(data=aboutImgData, size=(350,75))],
                         [sg.Text("Mini Text Toolkit (MTT)", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#ebd234")],
-                        [sg.Text("Version 1.0", size=(290, 1), justification="center", font=("Arial", 12))],
+                        [sg.Text("Version {}".format(version), size=(290, 1), justification="center", font=("Arial", 12))],
                         [],
                         [sg.Text("Created By: ShaFdo", size=(290, 1), justification="center", font=("Arial", 12))],
                     ]
@@ -427,7 +506,7 @@ class SetupGUI():
                     layout = [
                         [sg.Image(data=aboutImgData, size=(350,75))],
                         [sg.Text("Mini Text Toolkit (MTT)", size=(290, 1), justification="center", font=("Arial", 14, "bold"), text_color="#d4bf00")],
-                        [sg.Text("Version 1.0", size=(290, 1), justification="center", font=("Arial", 12))],
+                        [sg.Text("Version {}".format(version), size=(290, 1), justification="center", font=("Arial", 12))],
                         [],
                         [sg.Text("Created By: ShaFdo", size=(290, 1), justification="center", font=("Arial", 12))],
                     ]
@@ -495,28 +574,20 @@ class SetupGUI():
                 if(len(values["_asciiTextBox_"]) > 1): 
                     val = values["_asciiTextBox_"].strip("\n")
                     historyLogger().log(conn, "ascii", val)
-
                     # Ascii => Bin
                     window.FindElement("_binTextBox_").Update(convertor.fromAscii("ascii2bin", val))
-
                     # Ascii => Hex
                     window.FindElement("_hexTextBox_").Update(convertor.fromAscii("ascii2hex", val))
-
                     # Ascii => Base64
                     window.FindElement("_base64TextBox_").Update(convertor.fromAscii("ascii2base64", val))
-
                     # Ascii => Decimal
                     window.FindElement("_decimalTextBox_").Update(convertor.fromAscii("ascii2dec", val))
-
                     # Ascii => Rot13
                     window.FindElement("_rot13TextBox_").Update(convertor.fromAscii("ascii2rot13", val))
-                    
                     # Ascii => Rot47
                     window.FindElement("_rot47TextBox_").Update(convertor.fromAscii("ascii2rot47", val))
-
                     # Ascii => UrlEncode
                     window.FindElement("_urlEncodedTextBox_").Update(convertor.fromAscii("ascii2urlencode", val))
-
                     # Ascii => HtmlEntities
                     window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromAscii("ascii2htmlentities", val))
 
@@ -524,29 +595,21 @@ class SetupGUI():
                 elif(len(values["_binTextBox_"]) > 1): 
                     val = values["_binTextBox_"].strip("\n").replace(" ", "")
                     historyLogger().log(conn, "binary", val)
-
                     try:
                         # Bin => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromBin("bin2ascii", val))
-
                         # Bin => Hex
                         window.FindElement("_hexTextBox_").Update(convertor.fromBin("bin2hex", val))
-
                         # Bin => Base64
                         window.FindElement("_base64TextBox_").Update(convertor.fromBin("bin2base64", val))
-
                         # Bin => Decimal
                         window.FindElement("_decimalTextBox_").Update(convertor.fromBin("bin2decimal", val))
-
                         # Bin => Rot13
                         window.FindElement("_rot13TextBox_").Update(convertor.fromBin("bin2rot13", val))
-
                         # Bin => Rot47
                         window.FindElement("_rot47TextBox_").Update(convertor.fromBin("bin2rot47", val))
-
                         # Bin => URLEncoded
                         window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBin("bin2urlencode", val))
-
                         # Bin => HTMLEntities
                         window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("bin2htmlentities", val))
 
@@ -557,29 +620,21 @@ class SetupGUI():
                 elif(len(values["_hexTextBox_"]) > 1): 
                     val = values["_hexTextBox_"].strip("\n").replace(" ", "").replace("0x", "")
                     historyLogger().log(conn, "hex", val)
-
                     try:
                         # Hex => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))
-                        
                         # Hex => Bin
                         window.FindElement("_binTextBox_").Update(convertor.fromHex("hex2bin", val))
-
                         # Hex => base64
                         window.FindElement("_base64TextBox_").Update(convertor.fromHex("hex2base64", val))
-                        
                         # Hex => Decimal
                         window.FindElement("_decimalTextBox_").Update(convertor.fromHex("hex2decimal", val))
-
                         # Hex => Rot13
                         window.FindElement("_rot13TextBox_").Update(convertor.fromHex("hex2rot13", val))
-
                         # Hex => Rot47
                         window.FindElement("_rot47TextBox_").Update(convertor.fromHex("hex2rot47", val))
-                        
                         # Hex => URLEncoded
                         window.FindElement("_urlEncodedTextBox_").Update(convertor.fromHex("hex2urlencode", val))
-                        
                         # Hex => HTMLEntities
                         window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromHex("hex2htmlentities", val))
 
@@ -590,29 +645,21 @@ class SetupGUI():
                 elif(len(values["_base64TextBox_"]) > 1): 
                     val = values["_base64TextBox_"].strip("\n").replace(" ", "")
                     historyLogger().log(conn, "base64", val)
-
                     try:
                         # Base64 => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromBase64("base642ascii", val))
-                        
                         # Base64 => Bin
                         window.FindElement("_binTextBox_").Update(convertor.fromBase64("base642bin", val))
-
                         # Base64 => Hex
                         window.FindElement("_hexTextBox_").Update(convertor.fromBase64("base642hex", val))
-
                         # Base64 => Decimal
                         window.FindElement("_decimalTextBox_").Update(convertor.fromBase64("base642decimal", val))
-
                         # Base64 => Rot13
                         window.FindElement("_rot13TextBox_").Update(convertor.fromBase64("base642rot13", val))
-
                         # Base64 => Rot47
                         window.FindElement("_rot47TextBox_").Update(convertor.fromBase64("base642rot47", val))
-                        
                         # Base64 => UrlEncoded
                         window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBase64("base642urlencoded", val))
-                        
                         # Base64 => HTMLEntities
                         window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBase64("base642htmlentities", val))
 
@@ -623,29 +670,21 @@ class SetupGUI():
                 elif(len(values["_decimalTextBox_"]) > 1): 
                     val = values["_decimalTextBox_"].strip("\n")
                     historyLogger().log(conn, "decimal", val)
-
                     try:
                         # Decimal => Ascii
                         window.FindElement("_asciiTextBox_").Update(convertor.fromdec("decimal2ascii", val))
-
                         # Decimal => Binary
                         window.FindElement("_binTextBox_").Update(convertor.fromdec("decimal2bin", val))
-
                         # Decimal => Hex
-                        window.FindElement("_hexTextBox_").Update(convertor.fromdec("decimal2hex", val))
-                        
+                        window.FindElement("_hexTextBox_").Update(convertor.fromdec("decimal2hex", val))                        
                         # Decimal => Base64
                         window.FindElement("_base64TextBox_").Update(convertor.fromdec("decimal2base64", val))
-                        
                         # Decimal => Rot13
                         window.FindElement("_rot13TextBox_").Update(convertor.fromdec("decimal2rot13", val))
-                       
                         # Decimal => Rot47
                         window.FindElement("_rot47TextBox_").Update(convertor.fromdec("decimal2rot47", val))
-                        
                         # Decimal => UrlEncoded
                         window.FindElement("_urlEncodedTextBox_").Update(convertor.fromdec("decimal2urlencoded", val))
-                        
                         # Decimal => HTMLEntities
                         window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromdec("decimal2htmlentities", val))
 
@@ -656,15 +695,101 @@ class SetupGUI():
                 elif(len(values["_rot13TextBox_"]) > 1): 
                     val = values["_rot13TextBox_"].strip("\n").replace(" ", "")
                     historyLogger().log(conn, "rot13", val)
-
                     try:
                         # Rot13 => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromrot13("rot132ascii", val))  # Start Here
-
-
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromrot13("rot132ascii", val))
+                        # Rot13 => Binary
+                        window.FindElement("_binTextBox_").Update(convertor.fromrot13("rot132bin", val))
+                        # Rot13 => Hex
+                        window.FindElement("_hexTextBox_").Update(convertor.fromrot13("rot132hex", val))
+                        # Rot13 => Base64
+                        window.FindElement("_base64TextBox_").Update(convertor.fromrot13("rot132base64", val))
+                        # Rot13 => Decimal
+                        window.FindElement("_decimalTextBox_").Update(convertor.fromrot13("rot132decimal", val))
+                        # Rot13 => Rot47
+                        window.FindElement("_rot47TextBox_").Update(convertor.fromrot13("rot132rot47", val))
+                        # Rot13 => URLEncoded
+                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromrot13("rot132urlencoded", val))
+                        # Rot13 => HTMLEntities
+                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromrot13("rot132htmlentities", val))
+                    
                     except(ValueError):
                         convertor.valueErrorMsg("rot13")
 
+                # Rot47 => X
+                elif(len(values["_rot47TextBox_"]) > 1): 
+                    val = values["_rot47TextBox_"].strip("\n").replace(" ", "")
+                    historyLogger().log(conn, "rot47", val)
+                    try:
+                        # Rot47 => Ascii
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromrot47("rot472ascii", val))
+                        # Rot47 => Binary
+                        window.FindElement("_binTextBox_").Update(convertor.fromrot47("rot472bin", val))
+                        # Rot47 => Hex
+                        window.FindElement("_hexTextBox_").Update(convertor.fromrot47("rot472hex", val))
+                        # Rot47 => Base64
+                        window.FindElement("_base64TextBox_").Update(convertor.fromrot47("rot472base64", val))
+                        # Rot47 => Decimal
+                        window.FindElement("_decimalTextBox_").Update(convertor.fromrot47("rot472decimal", val))
+                        # Rot47 => Rot13
+                        window.FindElement("_rot13TextBox_").Update(convertor.fromrot47("rot472rot13", val))
+                        # Rot47 => URLEncoded
+                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromrot47("rot472urlencoded", val))
+                        # Rot47 => HTMLEntities
+                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromrot47("rot472htmlentities", val))
+                    
+                    except(ValueError):
+                        convertor.valueErrorMsg("rot47")
+
+                # URLEncoded => X
+                elif(len(values["_urlEncodedTextBox_"]) > 1): 
+                    val = values["_urlEncodedTextBox_"].strip("\n").replace(" ", "")
+                    historyLogger().log(conn, "rot47", val)
+                    try:
+                        # URLEncoded => Ascii
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromurlencoded("urlencoded2ascii", val))
+                        # URLEncoded => Binary
+                        window.FindElement("_binTextBox_").Update(convertor.fromurlencoded("urlencoded2bin", val))
+                        # URLEncoded => Hex
+                        window.FindElement("_hexTextBox_").Update(convertor.fromurlencoded("urlencoded2hex", val))
+                        # URLEncoded => Base64
+                        window.FindElement("_base64TextBox_").Update(convertor.fromurlencoded("urlencoded2base64", val))
+                        # URLEncoded => Decimal
+                        window.FindElement("_decimalTextBox_").Update(convertor.fromurlencoded("urlencoded2decimal", val))
+                        # URLEncoded => Rot13
+                        window.FindElement("_rot13TextBox_").Update(convertor.fromurlencoded("urlencoded2rot13", val))
+                        # URLEncoded => Rot47
+                        window.FindElement("_rot47TextBox_").Update(convertor.fromurlencoded("urlencoded2rot47", val))
+                        # URLEncoded => HTMLEntities
+                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromurlencoded("urlencoded2htmlentities", val))
+
+                    except(ValueError):
+                        convertor.valueErrorMsg("url encoded")
+
+                # HTMLEntities => X
+                elif(len(values["_htmlEntitiesTextBox_"]) > 1): 
+                    val = values["_htmlEntitiesTextBox_"].strip("\n").replace(" ", "")
+                    historyLogger().log(conn, "rot47", val)
+                    try:
+                        # HTMLEntities => Ascii
+                        window.FindElement("_asciiTextBox_").Update(convertor.fromhtmlentities("htmlentities2ascii", val))
+                        # HTMLEntities => Binary
+                        window.FindElement("_binTextBox_").Update(convertor.fromhtmlentities("htmlentities2bin", val))
+                        # HTMLEntities => Hex
+                        window.FindElement("_hexTextBox_").Update(convertor.fromhtmlentities("htmlentities2hex", val))
+                        # HTMLEntities => Base64
+                        window.FindElement("_base64TextBox_").Update(convertor.fromhtmlentities("htmlentities2base64", val))
+                        # HTMLEntities => Decimal
+                        window.FindElement("_decimalTextBox_").Update(convertor.fromhtmlentities("htmlentities2decimal", val))
+                        # HTMLEntities => Rot13
+                        window.FindElement("_rot13TextBox_").Update(convertor.fromhtmlentities("htmlentities2rot13", val))
+                        # HTMLEntities => ROT47
+                        window.FindElement("_rot47TextBox_").Update(convertor.fromhtmlentities("htmlentities2rot47", val))
+                        # HTMLEntities => URLEncoded
+                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromhtmlentities("htmlentities2urlencoded", val))
+
+                    except(ValueError):
+                        convertor.valueErrorMsg("html entity")
 
                 else:
                     layout = [
