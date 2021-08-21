@@ -2,7 +2,7 @@
 
 from itertools import count
 from urllib.parse import quote, unquote
-import os, shutil, base64, codecs, html, binascii, sqlite3, tempfile, webbrowser, pyperclip, time
+import os, shutil, base64, codecs, html, binascii, sqlite3, tempfile, webbrowser, pyperclip, time, requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 try: 
@@ -13,6 +13,7 @@ except(ModuleNotFoundError):
 
 
 # Globals
+mttGithubUpdateURL = "https://raw.githubusercontent.com/shafdo/Mini-Text-Toolkit/master/mtt.py"
 currentDir = os.path.dirname(__file__)
 sgThemeGlobal = ""
 platform = "windows" if(os.name) else "linux"
@@ -104,7 +105,6 @@ class historyLogger():
         print("[Info] Opening mtt history.")
         webbrowser.open(tempFile)
 
-
 conn = historyLogger().createDB()
 tempFolderPath = historyLogger().createTempFolder()
 print("\n"+r"/\/\/\/\/ Starting Logger /\/\/\/\/")
@@ -112,7 +112,6 @@ print('[Info] Temp folder created at path: {}'.format(tempFolderPath))
 
 
 class Convertor():
-
     def paddingFixer(self, convertValue, skipper):
         allXChars = [i for i in convertValue]
         bitsSplitContainer = []
@@ -465,10 +464,49 @@ class Convertor():
         ]
         sg.Window("Error", layout, size=(350, 175), finalize=True)
 
+class Updatehandler():
+    def __init__(self, sgThemeGlobal):
+        print("[Info] Trying to download mtt updated file from official mtt github repo: %s"%(mttGithubUpdateURL))
+        try:
+            res = requests.get(mttGithubUpdateURL)
+            if(res.status_code >= 400):
+                print("[Error] Download update file ended up with an error code {}. Please inform this issue: https://github.com/shafdo/Mini-Text-Toolkit".format(res.status_code))
+                layout = [
+                    [sg.Image(data=errorImgData, size=(415,100))],
+                    [sg.Text("Error while downloading the update file.".format(res.status_code), size=(175, 1), justification="center", font=("Arial", 14, "bold"), text_color="#ff4265")],
+                    [sg.Text("Please read terminal logs for more info.", size=(175, 1), justification="center", font=("Arial", 12, "bold"), text_color="#ccc" if (sgThemeGlobal == "Dark") else "#333")],
+                ]
+
+            elif('version = "{}"'.format(version).encode() not in res.content):
+                with open(os.path.join(currentDir, "mtt.py"), "wb") as f:
+                    f.write(res.content)
+                    f.close()
+
+                layout = [
+                    [sg.Image(data=tickImgData, size=(415,100))],
+                    [sg.Text("Sucessfully Updated", size=(175, 1), justification="center", font=("Arial", 14, "bold"), text_color="#27e800" if (sgThemeGlobal == "Dark") else "#1fbd00")],
+                    [sg.Text("Please reload MTT.", size=(175, 1), justification="center", font=("Arial", 13, "bold"), text_color="#ccc" if (sgThemeGlobal == "Dark") else "#333")],
+                ]
+                
+            else:
+                layout = [
+                    [sg.Image(data=tickImgData, size=(415,100))],
+                    [sg.Text("MTT already upto date.", size=(175, 1), justification="center", font=("Arial", 14, "bold"), text_color="#27e800" if (sgThemeGlobal == "Dark") else "#1fbd00")],
+                ]
+
+
+        except(requests.exceptions.ConnectionError):
+            print("[Error] Cannot download file. Please check your network connection.")
+            layout = [
+                [sg.Image(data=errorImgData, size=(415,100))],
+                [sg.Text("Cannot download file", size=(175, 1), justification="center", font=("Arial", 14, "bold"), text_color="#ff4265")],
+                [sg.Text("Please check your network connection.", size=(175, 1), justification="center", font=("Arial", 12, "bold"), text_color="#ccc" if (sgThemeGlobal == "Dark") else "#333")],
+            ]
+
+        sg.Window("Prompt", layout, size=(415, 200), finalize=True)
 
 class SetupGUI():
     def __init__(self):
-        
         # Setup Windows
         window = self.windowSetup()
         sgThemeGlobal = "Dark"
@@ -518,6 +556,9 @@ class SetupGUI():
                     ]
                     sg.Window("About", layout, size=(350, 200), finalize=True)
 
+            elif("::_update_" in event):
+                Updatehandler(sgThemeGlobal)
+
 
             # View History Options
             elif("_history_" in event or "h:72" in event):
@@ -561,15 +602,15 @@ class SetupGUI():
                 
             # Clear Feilds events options
             elif("_clear_" in event or "r:82" in event):
-                window.FindElement('_asciiTextBox_').Update('')
-                window.FindElement('_binTextBox_').Update('')
-                window.FindElement('_hexTextBox_').Update('')
-                window.FindElement('_base64TextBox_').Update('')
-                window.FindElement('_decimalTextBox_').Update('')
-                window.FindElement('_rot13TextBox_').Update('')
-                window.FindElement('_rot47TextBox_').Update('')
-                window.FindElement('_urlEncodedTextBox_').Update('')
-                window.FindElement('_htmlEntitiesTextBox_').Update('')
+                window['_asciiTextBox_'].Update('')
+                window['_binTextBox_'].Update('')
+                window['_hexTextBox_'].Update('')
+                window['_base64TextBox_'].Update('')
+                window['_decimalTextBox_'].Update('')
+                window['_rot13TextBox_'].Update('')
+                window['_rot47TextBox_'].Update('')
+                window['_urlEncodedTextBox_'].Update('')
+                window['_htmlEntitiesTextBox_'].Update('')
 
 
             # Go events
@@ -581,21 +622,21 @@ class SetupGUI():
                     val = values["_asciiTextBox_"].strip("\n")
                     historyLogger().log(conn, "ascii", val)
                     # Ascii => Bin
-                    window.FindElement("_binTextBox_").Update(convertor.fromAscii("ascii2bin", val))
+                    window["_binTextBox_"].Update(convertor.fromAscii("ascii2bin", val))
                     # Ascii => Hex
-                    window.FindElement("_hexTextBox_").Update(convertor.fromAscii("ascii2hex", val))
+                    window["_hexTextBox_"].Update(convertor.fromAscii("ascii2hex", val))
                     # Ascii => Base64
-                    window.FindElement("_base64TextBox_").Update(convertor.fromAscii("ascii2base64", val))
+                    window["_base64TextBox_"].Update(convertor.fromAscii("ascii2base64", val))
                     # Ascii => Decimal
-                    window.FindElement("_decimalTextBox_").Update(convertor.fromAscii("ascii2dec", val))
+                    window["_decimalTextBox_"].Update(convertor.fromAscii("ascii2dec", val))
                     # Ascii => Rot13
-                    window.FindElement("_rot13TextBox_").Update(convertor.fromAscii("ascii2rot13", val))
+                    window["_rot13TextBox_"].Update(convertor.fromAscii("ascii2rot13", val))
                     # Ascii => Rot47
-                    window.FindElement("_rot47TextBox_").Update(convertor.fromAscii("ascii2rot47", val))
+                    window["_rot47TextBox_"].Update(convertor.fromAscii("ascii2rot47", val))
                     # Ascii => UrlEncode
-                    window.FindElement("_urlEncodedTextBox_").Update(convertor.fromAscii("ascii2urlencode", val))
+                    window["_urlEncodedTextBox_"].Update(convertor.fromAscii("ascii2urlencode", val))
                     # Ascii => HtmlEntities
-                    window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromAscii("ascii2htmlentities", val))
+                    window["_htmlEntitiesTextBox_"].Update(convertor.fromAscii("ascii2htmlentities", val))
 
                 # Binary => X
                 elif(len(values["_binTextBox_"]) > 1): 
@@ -603,21 +644,21 @@ class SetupGUI():
                     historyLogger().log(conn, "binary", val)
                     try:
                         # Bin => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromBin("bin2ascii", val))
+                        window["_asciiTextBox_"].Update(convertor.fromBin("bin2ascii", val))
                         # Bin => Hex
-                        window.FindElement("_hexTextBox_").Update(convertor.fromBin("bin2hex", val))
+                        window["_hexTextBox_"].Update(convertor.fromBin("bin2hex", val))
                         # Bin => Base64
-                        window.FindElement("_base64TextBox_").Update(convertor.fromBin("bin2base64", val))
+                        window["_base64TextBox_"].Update(convertor.fromBin("bin2base64", val))
                         # Bin => Decimal
-                        window.FindElement("_decimalTextBox_").Update(convertor.fromBin("bin2decimal", val))
+                        window["_decimalTextBox_"].Update(convertor.fromBin("bin2decimal", val))
                         # Bin => Rot13
-                        window.FindElement("_rot13TextBox_").Update(convertor.fromBin("bin2rot13", val))
+                        window["_rot13TextBox_"].Update(convertor.fromBin("bin2rot13", val))
                         # Bin => Rot47
-                        window.FindElement("_rot47TextBox_").Update(convertor.fromBin("bin2rot47", val))
+                        window["_rot47TextBox_"].Update(convertor.fromBin("bin2rot47", val))
                         # Bin => URLEncoded
-                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBin("bin2urlencode", val))
+                        window["_urlEncodedTextBox_"].Update(convertor.fromBin("bin2urlencode", val))
                         # Bin => HTMLEntities
-                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBin("bin2htmlentities", val))
+                        window["_htmlEntitiesTextBox_"].Update(convertor.fromBin("bin2htmlentities", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("binary")
@@ -628,21 +669,21 @@ class SetupGUI():
                     historyLogger().log(conn, "hex", val)
                     try:
                         # Hex => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromHex("hex2ascii", val))
+                        window["_asciiTextBox_"].Update(convertor.fromHex("hex2ascii", val))
                         # Hex => Bin
-                        window.FindElement("_binTextBox_").Update(convertor.fromHex("hex2bin", val))
+                        window["_binTextBox_"].Update(convertor.fromHex("hex2bin", val))
                         # Hex => base64
-                        window.FindElement("_base64TextBox_").Update(convertor.fromHex("hex2base64", val))
+                        window["_base64TextBox_"].Update(convertor.fromHex("hex2base64", val))
                         # Hex => Decimal
-                        window.FindElement("_decimalTextBox_").Update(convertor.fromHex("hex2decimal", val))
+                        window["_decimalTextBox_"].Update(convertor.fromHex("hex2decimal", val))
                         # Hex => Rot13
-                        window.FindElement("_rot13TextBox_").Update(convertor.fromHex("hex2rot13", val))
+                        window["_rot13TextBox_"].Update(convertor.fromHex("hex2rot13", val))
                         # Hex => Rot47
-                        window.FindElement("_rot47TextBox_").Update(convertor.fromHex("hex2rot47", val))
+                        window["_rot47TextBox_"].Update(convertor.fromHex("hex2rot47", val))
                         # Hex => URLEncoded
-                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromHex("hex2urlencode", val))
+                        window["_urlEncodedTextBox_"].Update(convertor.fromHex("hex2urlencode", val))
                         # Hex => HTMLEntities
-                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromHex("hex2htmlentities", val))
+                        window["_htmlEntitiesTextBox_"].Update(convertor.fromHex("hex2htmlentities", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("hex")
@@ -653,21 +694,21 @@ class SetupGUI():
                     historyLogger().log(conn, "base64", val)
                     try:
                         # Base64 => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromBase64("base642ascii", val))
+                        window["_asciiTextBox_"].Update(convertor.fromBase64("base642ascii", val))
                         # Base64 => Bin
-                        window.FindElement("_binTextBox_").Update(convertor.fromBase64("base642bin", val))
+                        window["_binTextBox_"].Update(convertor.fromBase64("base642bin", val))
                         # Base64 => Hex
-                        window.FindElement("_hexTextBox_").Update(convertor.fromBase64("base642hex", val))
+                        window["_hexTextBox_"].Update(convertor.fromBase64("base642hex", val))
                         # Base64 => Decimal
-                        window.FindElement("_decimalTextBox_").Update(convertor.fromBase64("base642decimal", val))
+                        window["_decimalTextBox_"].Update(convertor.fromBase64("base642decimal", val))
                         # Base64 => Rot13
-                        window.FindElement("_rot13TextBox_").Update(convertor.fromBase64("base642rot13", val))
+                        window["_rot13TextBox_"].Update(convertor.fromBase64("base642rot13", val))
                         # Base64 => Rot47
-                        window.FindElement("_rot47TextBox_").Update(convertor.fromBase64("base642rot47", val))
+                        window["_rot47TextBox_"].Update(convertor.fromBase64("base642rot47", val))
                         # Base64 => UrlEncoded
-                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromBase64("base642urlencoded", val))
+                        window["_urlEncodedTextBox_"].Update(convertor.fromBase64("base642urlencoded", val))
                         # Base64 => HTMLEntities
-                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromBase64("base642htmlentities", val))
+                        window["_htmlEntitiesTextBox_"].Update(convertor.fromBase64("base642htmlentities", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("Base64")
@@ -678,21 +719,21 @@ class SetupGUI():
                     historyLogger().log(conn, "decimal", val)
                     try:
                         # Decimal => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromdec("decimal2ascii", val))
+                        window["_asciiTextBox_"].Update(convertor.fromdec("decimal2ascii", val))
                         # Decimal => Binary
-                        window.FindElement("_binTextBox_").Update(convertor.fromdec("decimal2bin", val))
+                        window["_binTextBox_"].Update(convertor.fromdec("decimal2bin", val))
                         # Decimal => Hex
-                        window.FindElement("_hexTextBox_").Update(convertor.fromdec("decimal2hex", val))                        
+                        window["_hexTextBox_"].Update(convertor.fromdec("decimal2hex", val))                        
                         # Decimal => Base64
-                        window.FindElement("_base64TextBox_").Update(convertor.fromdec("decimal2base64", val))
+                        window["_base64TextBox_"].Update(convertor.fromdec("decimal2base64", val))
                         # Decimal => Rot13
-                        window.FindElement("_rot13TextBox_").Update(convertor.fromdec("decimal2rot13", val))
+                        window["_rot13TextBox_"].Update(convertor.fromdec("decimal2rot13", val))
                         # Decimal => Rot47
-                        window.FindElement("_rot47TextBox_").Update(convertor.fromdec("decimal2rot47", val))
+                        window["_rot47TextBox_"].Update(convertor.fromdec("decimal2rot47", val))
                         # Decimal => UrlEncoded
-                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromdec("decimal2urlencoded", val))
+                        window["_urlEncodedTextBox_"].Update(convertor.fromdec("decimal2urlencoded", val))
                         # Decimal => HTMLEntities
-                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromdec("decimal2htmlentities", val))
+                        window["_htmlEntitiesTextBox_"].Update(convertor.fromdec("decimal2htmlentities", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("decimal")
@@ -703,21 +744,21 @@ class SetupGUI():
                     historyLogger().log(conn, "rot13", val)
                     try:
                         # Rot13 => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromrot13("rot132ascii", val))
+                        window["_asciiTextBox_"].Update(convertor.fromrot13("rot132ascii", val))
                         # Rot13 => Binary
-                        window.FindElement("_binTextBox_").Update(convertor.fromrot13("rot132bin", val))
+                        window["_binTextBox_"].Update(convertor.fromrot13("rot132bin", val))
                         # Rot13 => Hex
-                        window.FindElement("_hexTextBox_").Update(convertor.fromrot13("rot132hex", val))
+                        window["_hexTextBox_"].Update(convertor.fromrot13("rot132hex", val))
                         # Rot13 => Base64
-                        window.FindElement("_base64TextBox_").Update(convertor.fromrot13("rot132base64", val))
+                        window["_base64TextBox_"].Update(convertor.fromrot13("rot132base64", val))
                         # Rot13 => Decimal
-                        window.FindElement("_decimalTextBox_").Update(convertor.fromrot13("rot132decimal", val))
+                        window["_decimalTextBox_"].Update(convertor.fromrot13("rot132decimal", val))
                         # Rot13 => Rot47
-                        window.FindElement("_rot47TextBox_").Update(convertor.fromrot13("rot132rot47", val))
+                        window["_rot47TextBox_"].Update(convertor.fromrot13("rot132rot47", val))
                         # Rot13 => URLEncoded
-                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromrot13("rot132urlencoded", val))
+                        window["_urlEncodedTextBox_"].Update(convertor.fromrot13("rot132urlencoded", val))
                         # Rot13 => HTMLEntities
-                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromrot13("rot132htmlentities", val))
+                        window["_htmlEntitiesTextBox_"].Update(convertor.fromrot13("rot132htmlentities", val))
                     
                     except(ValueError):
                         convertor.valueErrorMsg("rot13")
@@ -728,21 +769,21 @@ class SetupGUI():
                     historyLogger().log(conn, "rot47", val)
                     try:
                         # Rot47 => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromrot47("rot472ascii", val))
+                        window["_asciiTextBox_"].Update(convertor.fromrot47("rot472ascii", val))
                         # Rot47 => Binary
-                        window.FindElement("_binTextBox_").Update(convertor.fromrot47("rot472bin", val))
+                        window["_binTextBox_"].Update(convertor.fromrot47("rot472bin", val))
                         # Rot47 => Hex
-                        window.FindElement("_hexTextBox_").Update(convertor.fromrot47("rot472hex", val))
+                        window["_hexTextBox_"].Update(convertor.fromrot47("rot472hex", val))
                         # Rot47 => Base64
-                        window.FindElement("_base64TextBox_").Update(convertor.fromrot47("rot472base64", val))
+                        window["_base64TextBox_"].Update(convertor.fromrot47("rot472base64", val))
                         # Rot47 => Decimal
-                        window.FindElement("_decimalTextBox_").Update(convertor.fromrot47("rot472decimal", val))
+                        window["_decimalTextBox_"].Update(convertor.fromrot47("rot472decimal", val))
                         # Rot47 => Rot13
-                        window.FindElement("_rot13TextBox_").Update(convertor.fromrot47("rot472rot13", val))
+                        window["_rot13TextBox_"].Update(convertor.fromrot47("rot472rot13", val))
                         # Rot47 => URLEncoded
-                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromrot47("rot472urlencoded", val))
+                        window["_urlEncodedTextBox_"].Update(convertor.fromrot47("rot472urlencoded", val))
                         # Rot47 => HTMLEntities
-                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromrot47("rot472htmlentities", val))
+                        window["_htmlEntitiesTextBox_"].Update(convertor.fromrot47("rot472htmlentities", val))
                     
                     except(ValueError):
                         convertor.valueErrorMsg("rot47")
@@ -753,21 +794,21 @@ class SetupGUI():
                     historyLogger().log(conn, "rot47", val)
                     try:
                         # URLEncoded => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromurlencoded("urlencoded2ascii", val))
+                        window["_asciiTextBox_"].Update(convertor.fromurlencoded("urlencoded2ascii", val))
                         # URLEncoded => Binary
-                        window.FindElement("_binTextBox_").Update(convertor.fromurlencoded("urlencoded2bin", val))
+                        window["_binTextBox_"].Update(convertor.fromurlencoded("urlencoded2bin", val))
                         # URLEncoded => Hex
-                        window.FindElement("_hexTextBox_").Update(convertor.fromurlencoded("urlencoded2hex", val))
+                        window["_hexTextBox_"].Update(convertor.fromurlencoded("urlencoded2hex", val))
                         # URLEncoded => Base64
-                        window.FindElement("_base64TextBox_").Update(convertor.fromurlencoded("urlencoded2base64", val))
+                        window["_base64TextBox_"].Update(convertor.fromurlencoded("urlencoded2base64", val))
                         # URLEncoded => Decimal
-                        window.FindElement("_decimalTextBox_").Update(convertor.fromurlencoded("urlencoded2decimal", val))
+                        window["_decimalTextBox_"].Update(convertor.fromurlencoded("urlencoded2decimal", val))
                         # URLEncoded => Rot13
-                        window.FindElement("_rot13TextBox_").Update(convertor.fromurlencoded("urlencoded2rot13", val))
+                        window["_rot13TextBox_"].Update(convertor.fromurlencoded("urlencoded2rot13", val))
                         # URLEncoded => Rot47
-                        window.FindElement("_rot47TextBox_").Update(convertor.fromurlencoded("urlencoded2rot47", val))
+                        window["_rot47TextBox_"].Update(convertor.fromurlencoded("urlencoded2rot47", val))
                         # URLEncoded => HTMLEntities
-                        window.FindElement("_htmlEntitiesTextBox_").Update(convertor.fromurlencoded("urlencoded2htmlentities", val))
+                        window["_htmlEntitiesTextBox_"].Update(convertor.fromurlencoded("urlencoded2htmlentities", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("url encoded")
@@ -778,21 +819,21 @@ class SetupGUI():
                     historyLogger().log(conn, "rot47", val)
                     try:
                         # HTMLEntities => Ascii
-                        window.FindElement("_asciiTextBox_").Update(convertor.fromhtmlentities("htmlentities2ascii", val))
+                        window["_asciiTextBox_"].Update(convertor.fromhtmlentities("htmlentities2ascii", val))
                         # HTMLEntities => Binary
-                        window.FindElement("_binTextBox_").Update(convertor.fromhtmlentities("htmlentities2bin", val))
+                        window["_binTextBox_"].Update(convertor.fromhtmlentities("htmlentities2bin", val))
                         # HTMLEntities => Hex
-                        window.FindElement("_hexTextBox_").Update(convertor.fromhtmlentities("htmlentities2hex", val))
+                        window["_hexTextBox_"].Update(convertor.fromhtmlentities("htmlentities2hex", val))
                         # HTMLEntities => Base64
-                        window.FindElement("_base64TextBox_").Update(convertor.fromhtmlentities("htmlentities2base64", val))
+                        window["_base64TextBox_"].Update(convertor.fromhtmlentities("htmlentities2base64", val))
                         # HTMLEntities => Decimal
-                        window.FindElement("_decimalTextBox_").Update(convertor.fromhtmlentities("htmlentities2decimal", val))
+                        window["_decimalTextBox_"].Update(convertor.fromhtmlentities("htmlentities2decimal", val))
                         # HTMLEntities => Rot13
-                        window.FindElement("_rot13TextBox_").Update(convertor.fromhtmlentities("htmlentities2rot13", val))
+                        window["_rot13TextBox_"].Update(convertor.fromhtmlentities("htmlentities2rot13", val))
                         # HTMLEntities => ROT47
-                        window.FindElement("_rot47TextBox_").Update(convertor.fromhtmlentities("htmlentities2rot47", val))
+                        window["_rot47TextBox_"].Update(convertor.fromhtmlentities("htmlentities2rot47", val))
                         # HTMLEntities => URLEncoded
-                        window.FindElement("_urlEncodedTextBox_").Update(convertor.fromhtmlentities("htmlentities2urlencoded", val))
+                        window["_urlEncodedTextBox_"].Update(convertor.fromhtmlentities("htmlentities2urlencoded", val))
 
                     except(ValueError):
                         convertor.valueErrorMsg("html entity")

@@ -7,28 +7,27 @@
 
 ## Overview
 
-* Mini Text Toolkit (MTT) is an open source offline text conversion tool. This tool was designed to provide an aid in solving crypto CTF challenges. But it also can be used for various other purpose 😃.
+* Mini Text Toolkit (MTT) is an open-source offline text conversion tool. This tool was designed to provide some help when solving crypto CTF challenges. But it can be used for general use as well due to its simplicity 😃.
 
 ## Pre-requisites
 
 * Python 3
 * A module named pysimplegui. You can easily install it with `pip install pysimplegui`.
 
-## Installation
+## Download
 
-* Curl:
-`curl https://raw.githubusercontent.com/shafdo/Mini-Text-Toolkit/master/mtt.py -O mtt.py`
+* Quick Download options:
+    * ```wget https://raw.githubusercontent.com/shafdo/Mini-Text-Toolkit/master/mtt.py -O mtt.py```
+    * ```curl https://raw.githubusercontent.com/shafdo/Mini-Text-Toolkit/master/mtt.py -O mtt.py```
 
 * Clone the repo
 `git clone https://github.com/shafdo/Mini-Text-Toolkit.git`
 
-___
 
-* Linux
+## Usage
+
+* Its that simple 🤗
 `python3 mtt.py`
-
-* Windows
-`python mtt.py`
 
 ## Contributions
 
@@ -40,4 +39,4 @@ ___
 
 ## Final Note
 
-* If you don't mind feel free to share mtt among the people you know and show some ❤️ to this project. Thank you.
+* If you don't mind feel free to share MTT among the people you know and show some ❤️ to this project. Thank you.
