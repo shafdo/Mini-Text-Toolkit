@@ -29,6 +29,12 @@
 * Its that simple 🤗
 `python3 mtt.py`
 
+## Preview
+
+* Here is a screenshot of MTT primary interface.
+
+![ScreenShot 1](https://i.imgur.com/E5E4gx2.png)
+
 ## Contributions
 
 * Awesome, great to hear that 😃. Please give me a ping.
