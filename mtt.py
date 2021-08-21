@@ -106,7 +106,7 @@ class historyLogger():
         f.write(soup.prettify())
         f.close()
         
-        print("[Info] Opening mtt history.")
+        print("[Info] Opening mtt history in browser.")
         webbrowser.open(tempFile)
 
 conn = historyLogger().createDB()
@@ -869,7 +869,7 @@ class SetupGUI():
         
         historyLogger().removeTempFolder(tempFolderPath)
 
-        print("\n[Exit Note] Thank you for trying out mtt. Gave a good day :).")
+        print("\n[Exit Note] Thank you for trying out mtt. Have a good day :).")
 
     
     def windowSetup(self, theme="Dark"):
