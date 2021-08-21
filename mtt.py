@@ -127,7 +127,7 @@ class Convertor():
 
         return "".join(bitsSplitContainer)
 
-        # stringLine to list => [result[i:i+skipper] for i in range(0, len(result), skipper)]
+        # Nicely separate the results coming from paddingFixer => [result[i:i+skipper] for i in range(0, len(result), skipper)]
 
 
     def fromAscii(self, convertMethod, convertValue):
