@@ -12,7 +12,9 @@
 ## Pre-requisites
 
 * Python 3
-* A module named pysimplegui. You can easily install it with `pip install pysimplegui`.
+* Install these modules:
+    * pysimplegui: `pip3 install pysimplegui`
+    * BeautifulSoup: `pip3 install bs4`
 
 ## Download
 
